@@ -525,7 +525,7 @@ select {
   text-align: left;
   text-decoration: none;
   border: none;
-  border-radius: var(--shape-xl) var(--shape-xl) var(--shape-xl) var(--sp-3);
+  border-radius: var(--shape-xl);
   background: var(--card-bg);
   color: var(--card-fg);
   cursor: pointer;
@@ -549,8 +549,9 @@ select {
 
 .tool-card:active {
   transform: scale(0.985);
-  /* 圆角沿对角翻过去，形状本身成为按下的反馈 */
-  border-radius: var(--sp-3) var(--shape-xl) var(--shape-xl) var(--shape-xl);
+  /* 按下时圆角收紧，形状本身就是反馈——
+     四个角一起变，不搞不对称，不然静态下会被当成画错了 */
+  border-radius: var(--shape-lg);
 }
 
 /* 有第二个工具时，第一张才铺两列；只有一个的时候别撑成横幅 */
@@ -569,8 +570,7 @@ select {
   margin-bottom: var(--sp-2);
   font-size: 28px;
   line-height: 1;
-  /* 和卡片同一个形状语言，尺寸按同心圆角缩小 */
-  border-radius: 18px 18px 18px 6px;
+  border-radius: 18px;
   background: color-mix(in srgb, var(--card-fg) 14%, transparent);
 }
 
