@@ -4,6 +4,7 @@ export function Button({
   variant = 'tonal',
   size,
   icon,
+  className,
   children,
   ...rest
 }: {
@@ -12,7 +13,7 @@ export function Button({
   icon?: ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <button className="btn" data-variant={variant} data-size={size} type="button" {...rest}>
+    <button className={className ? `btn ${className}` : 'btn'} data-variant={variant} data-size={size} type="button" {...rest}>
       {icon && <span className="btn-icon">{icon}</span>}
       {children}
     </button>

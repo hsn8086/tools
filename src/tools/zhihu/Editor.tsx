@@ -4,6 +4,7 @@ import { ZhihuCard } from './Card';
 import { ANON_AVATAR, ANON_NAME, WATERMARK_HOST, defaultData, uid } from './defaults';
 import { IMG_MARK, usedImageIds } from './content';
 import type { BadgeKind, ZhihuData } from './types';
+import { usePreviewLayout } from './usePreviewLayout';
 import { ShadowScope } from '../../ui/ShadowScope';
 import { Button, IconButton, Segmented, Slider, Switch, TextField } from '../../ui/controls';
 import { IconBold, IconCopy, IconDelete, IconDownload, IconExport, IconImage, IconLink, IconPerson } from '../../ui/icons';
@@ -82,24 +83,17 @@ function PickImage({
 
 export function ZhihuEditor() {
   const [data, setData] = useState<ZhihuData>(load);
-  const [scale, setScale] = useState(1);
   const [exporting, setExporting] = useState(false);
   const hostRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const t = setTimeout(() => localStorage.setItem(STORE_KEY, JSON.stringify(data)), 400);
     return () => clearTimeout(t);
   }, [data]);
 
-  // 预览缩放：卡片固定 375px，容器窄了就整体缩，绝不改卡片内部尺寸
-  useLayoutEffect(() => {
-    const el = frameRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => setScale(Math.min(1, (el.clientWidth - 32) / 375)));
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
+  usePreviewLayout(frameRef, innerRef, hostRef);
 
   const patch = useCallback(<K extends keyof ZhihuData>(key: K, value: Partial<ZhihuData[K]>) => {
     setData((d) => ({
@@ -109,6 +103,10 @@ export function ZhihuEditor() {
   }, []);
 
   const anonymous = data.author.name.trim() === ANON_NAME || data.author.name.trim() === '';
+
+  const reset = () => {
+    if (confirm('清空当前内容，恢复默认示例？')) setData(defaultData());
+  };
 
   return (
     <>
@@ -289,34 +287,36 @@ export function ZhihuEditor() {
             )}
           </Section>
 
-          <div className="row" style={{ padding: '4px 4px 96px' }}>
-            <Button
-              variant="text"
-              onClick={() => {
-                if (confirm('清空当前内容，恢复默认示例？')) setData(defaultData());
-              }}
-            >
-              重置
-            </Button>
-          </div>
         </div>
 
         <div className="preview-col">
-          <div className="preview-frame" ref={frameRef}>
-            <div style={{ width: 375 * scale }}>
-              <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: 375 }}>
+          <div className="preview-panel">
+            <div className="preview-frame" ref={frameRef}>
+              <div className="preview-inner" ref={innerRef}>
                 <ShadowScope css={cardCss} ref={hostRef}>
                   <ZhihuCard data={data} />
                 </ShadowScope>
               </div>
             </div>
-          </div>
-          <div className="row" style={{ marginTop: 'var(--sp-3)', justifyContent: 'flex-end' }}>
-            <Button variant="filled" icon={<IconExport />} onClick={() => setExporting(true)}>
-              导出图片
-            </Button>
+            <div className="preview-actions">
+              <Button variant="text" onClick={reset}>
+                重置
+              </Button>
+              <Button variant="filled" className="grow" icon={<IconExport />} onClick={() => setExporting(true)}>
+                导出图片
+              </Button>
+            </div>
           </div>
         </div>
+      </div>
+
+      <div className="bottom-bar">
+        <Button variant="text" onClick={reset}>
+          重置
+        </Button>
+        <Button variant="filled" className="grow" icon={<IconExport />} onClick={() => setExporting(true)}>
+          导出图片
+        </Button>
       </div>
 
       <ExportSheet open={exporting} onClose={() => setExporting(false)} hostRef={hostRef} data={data} setData={setData} />

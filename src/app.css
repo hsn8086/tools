@@ -591,20 +591,52 @@ select {
   top: 72px;
 }
 
-.preview-frame {
+/* 预览和它的操作共用一块面，按钮不再是浮在卡片外的孤件 */
+.preview-panel {
   padding: var(--sp-4);
   border-radius: var(--shape-xl);
   background: var(--md-surface-container-low);
-  display: flex;
-  justify-content: center;
 }
 
-.preview-frame > div {
+.preview-frame {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: hidden;
+}
+
+/* 真的没装下时才淡出，暗示下面还有内容 */
+.preview-frame[data-clipped='true'] {
+  -webkit-mask-image: linear-gradient(to bottom, #000 88%, transparent);
+  mask-image: linear-gradient(to bottom, #000 88%, transparent);
+}
+
+.preview-inner {
+  width: 375px;
+  flex: none;
+  transform-origin: top center;
   box-shadow: var(--elev-1);
   border-radius: var(--shape-xs);
   overflow: hidden;
-  /* 预览是极高频更新的区域：绝不加过渡 */
+  /* 预览是极高频更新的区域：绝不加过渡。
+     折叠缩放也必须 1:1 跟手，加了 transition 就会拖影 */
   transition: none;
+}
+
+.preview-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+}
+
+.btn.grow {
+  flex: 1;
+}
+
+/* 移动端底栏；宽屏不需要 */
+.bottom-bar {
+  display: none;
 }
 
 /* 区块内部统一用 gap 排版，不再靠零散的 margin 拼间距 */
@@ -841,27 +873,65 @@ select {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  /* 预览用 fixed，不留在文档流里：
+     缩放时不引起任何回流，也就不会和滚动互相拉扯 */
   .preview-col {
-    /* 预览提到最上面并吸顶：改内容时永远看得见结果 */
-    order: -1;
-    position: sticky;
+    position: fixed;
     top: 56px;
+    left: 0;
+    right: 0;
     z-index: 10;
-    margin: 0 calc(var(--sp-4) * -1);
+  }
+
+  .preview-panel {
     padding: 0;
+    border-radius: 0;
+    background: color-mix(in srgb, var(--md-surface) 82%, transparent);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    box-shadow: 0 1px 0 var(--md-outline-variant);
   }
 
   .preview-frame {
-    border-radius: 0;
-    max-height: 46vh;
-    overflow: hidden;
     align-items: flex-start;
-    background: color-mix(in srgb, var(--md-surface-container-low) 88%, transparent);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    /* 截断处淡出，暗示下面还有内容 */
-    -webkit-mask-image: linear-gradient(to bottom, #000 86%, transparent);
-    mask-image: linear-gradient(to bottom, #000 86%, transparent);
+  }
+
+  .preview-actions {
+    display: none;
+  }
+
+  /* 内容让出被 fixed 预览盖住的那一段。这个值是常量，
+     预览缩小时不跟着变，所以滚动过程中没有任何布局跳动 */
+  .editor-col {
+    padding-top: calc(var(--preview-max, 40vh) + var(--sp-4));
+    padding-bottom: 96px;
+  }
+
+  .bottom-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    position: fixed;
+    z-index: 20;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: var(--sp-3) var(--sp-4) calc(var(--sp-3) + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--md-surface-container) 88%, transparent);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    box-shadow: 0 -1px 0 var(--md-outline-variant);
+  }
+}
+
+@media (max-width: 899px) and (prefers-reduced-transparency: reduce) {
+  .preview-panel {
+    background: var(--md-surface);
+    backdrop-filter: none;
+  }
+  .bottom-bar {
+    background: var(--md-surface-container);
+    backdrop-filter: none;
   }
 }
 
