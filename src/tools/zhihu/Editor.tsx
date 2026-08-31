@@ -7,7 +7,8 @@ import type { BadgeKind, ZhihuData } from './types';
 import { usePreviewLayout } from '../../ui/usePreviewLayout';
 import { ShadowScope } from '../../ui/ShadowScope';
 import { Button, IconButton, Segmented, Switch, TextField } from '../../ui/controls';
-import { IconBold, IconDelete, IconExport, IconImage, IconLink, IconPerson } from '../../ui/icons';
+import { IconBold, IconDelete, IconDice, IconExport, IconImage, IconLink, IconPerson } from '../../ui/icons';
+import { randAnswerCount, randCount, randDate, randProvince, randSmallCount } from '../../ui/random';
 import { ExportSheet } from '../../export/ExportSheet';
 
 const STORE_KEY = 'tools.zhihu.v1';
@@ -143,7 +144,17 @@ export function ZhihuEditor() {
             )}
           </Section>
 
-          <Section title="问题">
+          <Section
+            title="问题"
+            actions={
+              data.question.show && data.question.showMeta ? (
+                <Dice
+                  label="随机回答数和关注数"
+                  onClick={() => patch('question', { answerCount: randAnswerCount(), followCount: randCount() })}
+                />
+              ) : undefined
+            }
+          >
             <div className="row">
               <Switch checked={data.question.show} onChange={(v) => patch('question', { show: v })} label="显示问题" />
               {data.question.show && (
@@ -189,7 +200,7 @@ export function ZhihuEditor() {
                 换头像
               </PickImage>
               <Button
-                size="sm"
+               
                 variant={anonymous ? 'filled' : 'outlined'}
                 icon={<IconPerson />}
                 onClick={() => patch('author', { avatar: ANON_AVATAR, name: ANON_NAME })}
@@ -205,7 +216,7 @@ export function ZhihuEditor() {
                 <div className="row">
                   <span className="muted grow">认证角标</span>
                   <Segmented
-                    size="sm"
+                   
                     value={data.author.badge}
                     onChange={(v) => patch('author', { badge: v as BadgeKind })}
                     options={[
@@ -224,7 +235,17 @@ export function ZhihuEditor() {
             )}
           </Section>
 
-          <Section title="赞同">
+          <Section
+            title="赞同"
+            actions={
+              data.vote.show ? (
+                <Dice
+                  label="随机赞同数"
+                  onClick={() => patch('vote', { count: randCount(), listenedCount: randSmallCount() })}
+                />
+              ) : undefined
+            }
+          >
             <div className="row">
               <Switch checked={data.vote.show} onChange={(v) => patch('vote', { show: v })} label="显示赞同行" />
               {data.vote.show && (
@@ -247,7 +268,14 @@ export function ZhihuEditor() {
 
           <ContentSection data={data} setData={setData} />
 
-          <Section title="页脚">
+          <Section
+            title="页脚"
+            actions={
+              data.footer.show ? (
+                <Dice label="随机时间和属地" onClick={() => patch('footer', { time: randDate(), ip: randProvince() })} />
+              ) : undefined
+            }
+          >
             {/* 开关归开关，带左侧标题的控件单独一行——
                 两种标注方式混在同一行里就乱了 */}
             <div className="row">
@@ -266,7 +294,7 @@ export function ZhihuEditor() {
                 <div className="row">
                   <span className="muted grow">写法</span>
                   <Segmented
-                    size="sm"
+                   
                     value={data.footer.style}
                     onChange={(v) => patch('footer', { style: v })}
                     options={[
@@ -332,12 +360,32 @@ export function ZhihuEditor() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  actions,
+  children,
+}: {
+  title: string;
+  actions?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <div className="section">
-      <h4>{title}</h4>
+      <div className="section-head">
+        <h4>{title}</h4>
+        {actions}
+      </div>
       {children}
     </div>
+  );
+}
+
+/** 章节标题右边那颗骰子 */
+function Dice({ onClick, label }: { onClick: () => void; label: string }) {
+  return (
+    <IconButton onClick={onClick} label={label}>
+      <IconDice />
+    </IconButton>
   );
 }
 
@@ -434,7 +482,7 @@ function ContentSection({
             <div className="img-item" key={im.id} data-orphan={!used.has(im.id) || undefined}>
               <img src={im.src} alt="" />
               <Segmented
-                size="sm"
+               
                 value={im.fit}
                 onChange={(v) => setFit(im.id, v)}
                 options={[

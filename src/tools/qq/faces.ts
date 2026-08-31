@@ -1,5 +1,6 @@
-/** QQ 经典小黄脸，取自 koishijs/QFace（MIT）的静态 PNG，
- *  下到 public/assets/qqface/ 走同域，导出截图时不会有跨域问题。*/
+/** 可选的头像预设：QQ 经典小黄脸，取自 koishijs/QFace（MIT）的静态 PNG。
+ *  下到 public/assets/qqface/ 走同域，导出截图时不会有跨域问题。
+ *  默认头像不是这些，是 defaults.ts 里那只企鹅。*/
 export interface Face {
   id: string;
   name: string;

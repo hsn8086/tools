@@ -61,3 +61,17 @@ export const IconDrag = () => (
     <circle cx="15" cy="19" r="1.6" />
   </svg>
 );
+
+/** 骰子。比 shuffle 那两根交叉箭头更直白，一眼是「随机」而不是「打乱顺序」 */
+export const IconDice = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" stroke="currentColor" strokeWidth="1.8" />
+    <g fill="currentColor">
+      <circle cx="8.4" cy="8.4" r="1.35" />
+      <circle cx="15.6" cy="8.4" r="1.35" />
+      <circle cx="12" cy="12" r="1.35" />
+      <circle cx="8.4" cy="15.6" r="1.35" />
+      <circle cx="15.6" cy="15.6" r="1.35" />
+    </g>
+  </svg>
+);

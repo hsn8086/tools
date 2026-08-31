@@ -554,12 +554,6 @@ select {
   border-radius: var(--shape-lg);
 }
 
-/* 有第二个工具时，第一张才铺两列；只有一个的时候别撑成横幅 */
-@media (min-width: 900px) {
-  .tool-card:first-child:not(:last-child) {
-    grid-column: span 2;
-  }
-}
 
 .tool-icon {
   display: flex;

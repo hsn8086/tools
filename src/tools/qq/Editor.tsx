@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import cardCss from './card.css?inline';
 import { QQCard } from './Card';
-import { defaultData, pickFace, WATERMARK_HOST } from './defaults';
+import { DEFAULT_AVATAR, defaultData, WATERMARK_HOST } from './defaults';
 import { FACES, faceUrl } from './faces';
 import { IMG_MARK, syncPeople } from './script';
 import type { QQData } from './types';
 import { usePreviewLayout } from '../../ui/usePreviewLayout';
 import { ShadowScope } from '../../ui/ShadowScope';
 import { Button, IconButton, Segmented, Switch, TextField } from '../../ui/controls';
-import { IconDelete, IconExport, IconImage, IconPerson } from '../../ui/icons';
+import { IconDelete, IconDice, IconExport, IconImage, IconPerson } from '../../ui/icons';
+import { pick, randClock, randInt } from '../../ui/random';
 import { ExportSheet } from '../../export/ExportSheet';
 import { useSnackbar } from '../../ui/Snackbar';
 
@@ -70,7 +71,7 @@ export function QQEditor() {
     if (!missing.length) return;
     setData((d) => ({
       ...d,
-      people: syncPeople(d, '').map((p) => (p.avatar ? p : { ...p, avatar: pickFace(p.name) })),
+      people: syncPeople(d, '').map((p) => (p.avatar ? p : { ...p, avatar: DEFAULT_AVATAR })),
     }));
   }, [people]);
 
@@ -118,7 +119,23 @@ export function QQEditor() {
     <>
       <div className="tool-layout">
         <div className="editor-col">
-          <Section title="外观">
+          <Section
+            title="外观"
+            actions={
+              <IconButton
+                label="随机未读数和状态栏"
+                onClick={() =>
+                  setData((d) => ({
+                    ...d,
+                    header: { ...d.header, unread: pick(['', '', '2', '5', '9', '12', '36', '99+']) },
+                    statusBar: { ...d.statusBar, time: randClock(), battery: randInt(15, 100) },
+                  }))
+                }
+              >
+                <IconDice />
+              </IconButton>
+            }
+          >
             <div className="row">
               <span className="muted grow">主题</span>
               <Segmented
