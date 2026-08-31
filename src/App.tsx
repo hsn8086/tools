@@ -2,7 +2,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { findTool, tools } from './registry';
 import { applyTheme, watchSystem, DEFAULT_SEED, type Mode } from './design/theme';
 import { IconButton, Segmented } from './ui/controls';
-import { IconBack } from './ui/icons';
+import { IconBack, IconForward } from './ui/icons';
 import { SnackbarProvider } from './ui/Snackbar';
 import { navigate, onNavClick, useRoute } from './router';
 
@@ -32,7 +32,8 @@ export function App() {
             <IconBack />
           </IconButton>
         )}
-        <h1>{tool ? tool.name : '小工具'}</h1>
+        {/* 首页的大标题已经写在内容里了，顶栏不再重复一遍 */}
+        <h1>{tool?.name ?? ''}</h1>
         <Segmented
           value={mode}
           onChange={setMode}
@@ -62,7 +63,6 @@ function Home() {
     <>
       <div className="hero">
         <h2>小工具</h2>
-        <p>一些自己要用的小东西。全部在浏览器里跑，图片不上传。</p>
       </div>
       <div className="grid">
         {tools.map((t, i) => (
@@ -73,9 +73,12 @@ function Home() {
             style={{ animationDelay: `${i * 40}ms` }}
             onClick={onNavClick(`/${t.id}`)}
           >
-            <span className="emoji">{t.emoji}</span>
+            <span className="tool-icon">{t.emoji}</span>
             <h3>{t.name}</h3>
             <p>{t.desc}</p>
+            <span className="tool-go">
+              <IconForward />
+            </span>
           </a>
         ))}
       </div>

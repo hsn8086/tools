@@ -498,42 +498,114 @@ select {
 .hero h2 {
   font: var(--type-display);
   letter-spacing: var(--track-display);
-  margin: 0 0 var(--sp-2);
-}
-
-.hero p {
   margin: 0;
-  color: var(--md-on-surface-variant);
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
   gap: var(--sp-3);
 }
 
+/* 工具卡：MD3E 的表达力预算全花在这里 —— 非对称形状、成对的容器色、
+   按下时形状沿对角翻转。首页是低频页面，这点动静担得起 */
 .tool-card {
-  display: block;
+  --card-bg: var(--md-secondary-container);
+  --card-fg: var(--md-on-secondary-container);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-height: 196px;
+  padding: var(--sp-5);
   text-align: left;
   text-decoration: none;
-  padding: var(--sp-5);
   border: none;
-  border-radius: var(--shape-xl);
-  background: var(--md-surface-container-low);
-  color: var(--md-on-surface);
+  border-radius: var(--shape-xl) var(--shape-xl) var(--shape-xl) var(--sp-3);
+  background: var(--card-bg);
+  color: var(--card-fg);
   cursor: pointer;
   opacity: 0;
   transform: translateY(8px);
   animation: card-in 300ms var(--ease-out) forwards;
   transition:
     transform var(--dur-press) var(--ease-out),
-    border-radius var(--dur-press) var(--ease-out),
-    background-color var(--dur-press) ease;
+    border-radius var(--dur-press) var(--ease-out);
+}
+
+.tool-card:nth-child(3n + 2) {
+  --card-bg: var(--md-tertiary-container);
+  --card-fg: var(--md-on-tertiary-container);
+}
+
+.tool-card:nth-child(3n + 3) {
+  --card-bg: var(--md-primary-container);
+  --card-fg: var(--md-on-primary-container);
 }
 
 .tool-card:active {
-  transform: scale(0.98);
-  border-radius: var(--shape-lg);
+  transform: scale(0.985);
+  /* 圆角沿对角翻过去，形状本身成为按下的反馈 */
+  border-radius: var(--sp-3) var(--shape-xl) var(--shape-xl) var(--shape-xl);
+}
+
+/* 有第二个工具时，第一张才铺两列；只有一个的时候别撑成横幅 */
+@media (min-width: 900px) {
+  .tool-card:first-child:not(:last-child) {
+    grid-column: span 2;
+  }
+}
+
+.tool-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: var(--sp-2);
+  font-size: 28px;
+  line-height: 1;
+  /* 和卡片同一个形状语言，尺寸按同心圆角缩小 */
+  border-radius: 18px 18px 18px 6px;
+  background: color-mix(in srgb, var(--card-fg) 14%, transparent);
+}
+
+.tool-card h3 {
+  font: var(--type-headline);
+  letter-spacing: var(--track-headline);
+  margin: 0;
+}
+
+.tool-card p {
+  margin: 0;
+  padding-right: 44px;
+  font: var(--type-small);
+  color: color-mix(in srgb, var(--card-fg) 78%, transparent);
+}
+
+.tool-go {
+  position: absolute;
+  right: var(--sp-4);
+  bottom: var(--sp-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--shape-full);
+  background: color-mix(in srgb, var(--card-fg) 12%, transparent);
+  transition: transform var(--dur-press) var(--ease-out);
+}
+
+.tool-go svg {
+  width: 20px;
+  height: 20px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tool-card:hover .tool-go {
+    transform: translateX(3px);
+  }
 }
 
 @keyframes card-in {
@@ -548,30 +620,14 @@ select {
     transform: none;
     animation: card-fade 200ms ease forwards;
   }
+  .tool-card:active {
+    transform: none;
+  }
   @keyframes card-fade {
     to {
       opacity: 1;
     }
   }
-}
-
-.tool-card .emoji {
-  font-size: 28px;
-  line-height: 1;
-  display: block;
-  margin-bottom: var(--sp-3);
-}
-
-.tool-card h3 {
-  font: var(--type-title);
-  letter-spacing: var(--track-title);
-  margin: 0 0 var(--sp-1);
-}
-
-.tool-card p {
-  margin: 0;
-  font: var(--type-small);
-  color: var(--md-on-surface-variant);
 }
 
 /* 工具页 */

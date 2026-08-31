@@ -10,6 +10,8 @@ const Svg = ({ d, size = 24 }: { d: string; size?: number }) => (
 
 export const IconBack = () => <Svg d="M10 19l-7-7 7-7 1.4 1.4L6.8 11H21v2H6.8l4.6 4.6z" />;
 
+export const IconForward = () => <Svg d="m14 18-1.4-1.45L16.15 13H4v-2h12.15L12.6 7.45 14 6l6 6z" />;
+
 export const IconClose = () => (
   <Svg d="M6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5l5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6z" />
 );

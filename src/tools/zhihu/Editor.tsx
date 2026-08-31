@@ -252,6 +252,8 @@ export function ZhihuEditor() {
           <ContentSection data={data} setData={setData} />
 
           <Section title="页脚">
+            {/* 开关归开关，带左侧标题的控件单独一行——
+                两种标注方式混在同一行里就乱了 */}
             <div className="row">
               <Switch checked={data.footer.show} onChange={(v) => patch('footer', { show: v })} label="显示页脚" />
               <Switch
@@ -259,6 +261,9 @@ export function ZhihuEditor() {
                 onChange={(v) => setData((d) => ({ ...d, showExpandChevron: v }))}
                 label="折叠箭头"
               />
+              {data.footer.show && (
+                <Switch checked={data.footer.noRepost} onChange={(v) => patch('footer', { noRepost: v })} label="禁止转载" />
+              )}
             </div>
             {data.footer.show && (
               <>
@@ -273,7 +278,6 @@ export function ZhihuEditor() {
                       { value: 'plain' as const, label: '简洁' },
                     ]}
                   />
-                  <Switch checked={data.footer.noRepost} onChange={(v) => patch('footer', { noRepost: v })} label="禁止转载" />
                 </div>
                 <div className="row">
                   <div className="grow">
