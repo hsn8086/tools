@@ -531,7 +531,7 @@ function ExportSheet({
           checked={data.watermark.show}
           onChange={(v) => {
             setData((d) => ({ ...d, watermark: { ...d.watermark, show: v } }));
-            if (!v) snack('去掉了。有人问起，说一声这是哪做的就行。');
+            if (!v) snack('已去掉水印');
           }}
           label="保留小水印"
         />
