@@ -1,0 +1,302 @@
+/* 知乎卡片 —— 这份 CSS 运行在 shadow root 里，与站点设计系统完全隔离。
+   所有尺寸写死 px，基准逻辑宽度 375（知乎移动端），导出时靠 pixelRatio 放大。 */
+
+:host {
+  all: initial;
+  display: block;
+  contain: paint;
+}
+
+.zh {
+  /* ---- 浅色主题 ---- */
+  --zh-bg: #ffffff;
+  --zh-title: #121212;
+  --zh-body: #1a1a1a;
+  --zh-meta: #8590a6;
+  --zh-name: #121212;
+  --zh-sep: #f0f0f2;
+  --zh-link: #175199;
+  --zh-follow-bg: #ebf5ff;
+  --zh-follow-fg: #0084ff;
+  --zh-icon: #999999;
+  --zh-mark: rgba(18, 18, 18, 0.28);
+  --zh-status: #121212;
+
+  width: 375px;
+  box-sizing: border-box;
+  background: var(--zh-bg);
+  color: var(--zh-body);
+  font-family: var(--zh-font, 'PingFang SC', 'Noto Sans SC', 'HarmonyOS Sans SC', 'Microsoft YaHei', system-ui, sans-serif);
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+  position: relative;
+  overflow: hidden;
+}
+
+.zh[data-theme='dark'] {
+  --zh-bg: #151515;
+  --zh-title: #f0f0f0;
+  --zh-body: #d5d5d5;
+  --zh-meta: #8a8a96;
+  --zh-name: #ebebeb;
+  --zh-sep: #262626;
+  --zh-link: #5b9bff;
+  --zh-follow-bg: #1a2c40;
+  --zh-follow-fg: #4e9bff;
+  --zh-icon: #7a7a7a;
+  --zh-mark: rgba(255, 255, 255, 0.26);
+  --zh-status: #ebebeb;
+}
+
+.zh * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- 状态栏 ---------- */
+
+.status {
+  height: 44px;
+  padding: 0 20px 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--zh-status);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  position: relative;
+}
+
+/* 灵动岛：截图里真实存在的形状（刘海不会出现在截图里） */
+.status .island {
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  transform: translateX(-50%);
+  width: 92px;
+  height: 30px;
+  background: #000;
+  border-radius: 999px;
+}
+
+.status .right {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.status svg {
+  display: block;
+}
+
+/* ---------- 问题 ---------- */
+
+.question {
+  padding: 14px 14px 13px;
+}
+
+.q-title {
+  font-size: 18px;
+  line-height: 1.42;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+  color: var(--zh-title);
+}
+
+.q-meta {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--zh-meta);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.q-meta .chev {
+  color: var(--zh-meta);
+  opacity: 0.85;
+  margin-left: 1px;
+}
+
+.sep {
+  height: 1px;
+  background: var(--zh-sep);
+  margin: 0 0;
+}
+
+/* ---------- 答主 ---------- */
+
+.answer {
+  padding: 18px 14px 0;
+}
+
+.author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: none;
+  background: #e3e8ef;
+}
+
+.a-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.a-name {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 17px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--zh-name);
+}
+
+.a-name span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badge {
+  flex: none;
+  display: block;
+}
+
+.a-headline {
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--zh-meta);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.follow {
+  flex: none;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: var(--zh-follow-bg);
+  color: var(--zh-follow-fg);
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.share {
+  flex: none;
+  color: var(--zh-icon);
+  display: block;
+}
+
+/* ---------- 赞同行 ---------- */
+
+.vote {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--zh-meta);
+}
+
+.vote .left,
+.vote .listened {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ---------- 正文 ---------- */
+
+.content {
+  margin-top: 10px;
+  font-size: 15.5px;
+  line-height: 1.62;
+  color: var(--zh-body);
+  word-break: break-word;
+}
+
+.content p + p {
+  margin-top: 1.3em;
+}
+
+.content p strong {
+  font-weight: 600;
+}
+
+.content p .lk {
+  color: var(--zh-link);
+}
+
+.content figure {
+  margin: 1em 0;
+  text-align: center;
+}
+
+.content figure img {
+  max-width: 100%;
+  display: block;
+  margin: 0 auto;
+  border-radius: 2px;
+}
+
+.content figure[data-fit='full'] {
+  margin-left: -14px;
+  margin-right: -14px;
+}
+
+.content figure[data-fit='full'] img {
+  width: 375px;
+  border-radius: 0;
+}
+
+.chevron-more {
+  display: flex;
+  justify-content: flex-end;
+  color: var(--zh-icon);
+  margin-top: -6px;
+}
+
+/* ---------- 页脚 ---------- */
+
+.footer {
+  padding: 14px 14px 16px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--zh-meta);
+}
+
+.answer.no-footer {
+  padding-bottom: 16px;
+}
+
+/* ---------- 水印 ---------- */
+
+.watermark {
+  position: absolute;
+  right: 8px;
+  bottom: 6px;
+  font-size: 9px;
+  letter-spacing: 0.2px;
+  color: var(--zh-mark);
+  pointer-events: none;
+}

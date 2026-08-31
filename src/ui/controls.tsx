@@ -1,0 +1,162 @@
+import { useId, type ReactNode, type Ref } from 'react';
+
+export function Button({
+  variant = 'tonal',
+  size,
+  icon,
+  children,
+  ...rest
+}: {
+  variant?: 'filled' | 'tonal' | 'text' | 'outlined';
+  size?: 'sm';
+  icon?: ReactNode;
+} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button className="btn" data-variant={variant} data-size={size} type="button" {...rest}>
+      {icon && <span className="btn-icon">{icon}</span>}
+      {children}
+    </button>
+  );
+}
+
+export function IconButton({
+  label,
+  variant = 'standard',
+  children,
+  ref,
+  ...rest
+}: {
+  label: string;
+  variant?: 'standard' | 'tonal';
+  ref?: Ref<HTMLButtonElement>;
+} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button className="icon-btn" data-variant={variant} type="button" aria-label={label} title={label} ref={ref} {...rest}>
+      {children}
+    </button>
+  );
+}
+
+export function Segmented<T extends string | number>({
+  value,
+  options,
+  onChange,
+  size,
+}: {
+  value: T;
+  options: { value: T; label: ReactNode }[];
+  onChange: (v: T) => void;
+  size?: 'sm';
+}) {
+  return (
+    <div className="seg" data-size={size} role="group">
+      {options.map((o) => (
+        <button key={String(o.value)} type="button" data-on={o.value === value} onClick={() => onChange(o.value)}>
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function Switch({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: ReactNode }) {
+  return (
+    <label className="switch">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+      <span className="track">
+        <span className="thumb" />
+      </span>
+      <span className="switch-label">{label}</span>
+    </label>
+  );
+}
+
+export function Slider({
+  value,
+  min = 0,
+  max = 100,
+  step = 1,
+  onChange,
+  label,
+}: {
+  value: number;
+  min?: number;
+  max?: number;
+  step?: number;
+  onChange: (v: number) => void;
+  label: string;
+}) {
+  const pct = ((value - min) / (max - min)) * 100;
+  return (
+    <div className="slider" style={{ ['--v' as string]: `${pct}%` }}>
+      <span className="rail" />
+      <span className="fill" />
+      <span className="handle" />
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(+e.target.value)}
+        aria-label={label}
+      />
+    </div>
+  );
+}
+
+/**
+ * MD3 描边输入框。缺口是真的缺口：用 fieldset + legend，
+ * legend 的宽度从 0 过渡到内容宽度，标签浮上去时描边正好让开。
+ */
+export function TextField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  inputMode,
+  multiline,
+  rows,
+  ref,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  inputMode?: 'text' | 'numeric';
+  multiline?: boolean;
+  rows?: number;
+  ref?: Ref<HTMLTextAreaElement>;
+}) {
+  const id = useId();
+  const floated = value.length > 0 || !!placeholder;
+
+  return (
+    <div className="tf" data-floated={floated || undefined} data-multiline={multiline || undefined}>
+      {multiline ? (
+        <textarea
+          id={id}
+          ref={ref}
+          rows={rows ?? 3}
+          value={value}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      ) : (
+        <input
+          id={id}
+          value={value}
+          placeholder={placeholder}
+          inputMode={inputMode}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      )}
+      <label htmlFor={id}>{label}</label>
+      <fieldset aria-hidden="true">
+        <legend>
+          <span>{label}</span>
+        </legend>
+      </fieldset>
+    </div>
+  );
+}

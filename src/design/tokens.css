@@ -1,0 +1,64 @@
+/* ============================================================
+   MD3 Expressive —— 非颜色 token
+   颜色 token 由 design/theme.ts 从种子色动态生成（HCT），写进 :root
+   ============================================================ */
+
+:root {
+  /* ---- 形状 ---- */
+  --shape-xs: 4px;
+  --shape-sm: 8px;
+  --shape-md: 12px;
+  --shape-lg: 16px;
+  --shape-xl: 28px;
+  --shape-full: 999px;
+
+  /* ---- 间距 ---- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+
+  /* ---- 动效 ----
+     曲线取自 emil / animations.dev，比 CSS 内置的更有劲。
+     绝不用 ease-in：它把用户最在意的头几帧拖慢了。 */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --dur-press: 140ms;
+  --dur-popover: 180ms;
+  --dur-menu: 220ms;
+  --dur-sheet: 320ms;
+
+  /* ---- 字体 ---- */
+  --font-sans: system-ui, -apple-system, 'PingFang SC', 'Noto Sans SC', 'Segoe UI', sans-serif;
+
+  /* MD3E 强调字阶：标题收紧字距，正文归零 */
+  --type-display: 700 32px/1.15 var(--font-sans);
+  --type-headline: 600 24px/1.25 var(--font-sans);
+  --type-title: 600 18px/1.35 var(--font-sans);
+  --type-label: 500 14px/1.35 var(--font-sans);
+  --type-body: 400 15px/1.55 var(--font-sans);
+  --type-small: 400 13px/1.45 var(--font-sans);
+
+  --track-display: -0.02em;
+  --track-headline: -0.015em;
+  --track-title: -0.01em;
+  --track-body: 0;
+
+  /* ---- 高度层 ---- */
+  --elev-1: 0 1px 2px rgba(0, 0, 0, 0.08), 0 1px 3px 1px rgba(0, 0, 0, 0.06);
+  --elev-2: 0 1px 2px rgba(0, 0, 0, 0.1), 0 2px 6px 2px rgba(0, 0, 0, 0.08);
+  --elev-3: 0 4px 8px 3px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-press: 0ms;
+    --dur-popover: 120ms;
+    --dur-menu: 120ms;
+    --dur-sheet: 160ms;
+  }
+}
