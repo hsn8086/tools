@@ -281,7 +281,11 @@ select {
    ============================================================ */
 
 .slider {
-  --v: 0%;
+  --v: 0;
+  /* handle 半宽，保证它两端都留在轨道里 */
+  --pad: 2px;
+  /* MD3 的 handle 两侧都和轨道断开一小段 */
+  --gap: 6px;
   position: relative;
   display: block;
   width: 100%;
@@ -310,29 +314,29 @@ select {
   pointer-events: none;
 }
 
+/* 未激活段从 handle 右侧开始，而不是铺满整条 */
 .slider .rail {
-  left: 0;
+  left: min(100%, calc(var(--v) * (100% - var(--pad) * 2) + var(--gap)));
   right: 0;
   background: var(--md-secondary-container);
 }
 
+/* 到 0 就是真的 0 宽，不留一截圆头在最左边 */
 .slider .fill {
   left: 0;
-  width: calc(var(--v) - 6px);
-  min-width: 8px;
+  width: max(0px, calc(var(--v) * (100% - var(--pad) * 2) - var(--gap)));
   background: var(--md-primary);
 }
 
 .slider .handle {
   position: absolute;
   top: 50%;
-  left: var(--v);
+  left: calc(var(--pad) + var(--v) * (100% - var(--pad) * 2));
   width: 4px;
   height: 40px;
-  margin-left: -2px;
   border-radius: var(--shape-full);
   background: var(--md-primary);
-  transform: translateY(-50%);
+  transform: translate(-50%, -50%);
   pointer-events: none;
   transition: width var(--dur-press) var(--ease-out);
 }
@@ -864,6 +868,10 @@ select {
   }
   .sheet .handle-bar {
     display: none;
+  }
+  /* 桁屏没有拖手条撑顶部空间，得自己把边距补上 */
+  .sheet {
+    padding-top: var(--sp-5);
   }
 }
 

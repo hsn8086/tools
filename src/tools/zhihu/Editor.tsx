@@ -503,7 +503,7 @@ function ExportSheet({
   return (
     <Sheet open={open} onClose={onClose} title="导出">
       <div className="row">
-        <span className="muted grow">倍率</span>
+        <span className="muted grow">分辨率倍率</span>
         <Segmented
           value={ratio}
           onChange={setRatio}
@@ -531,7 +531,7 @@ function ExportSheet({
           checked={data.watermark.show}
           onChange={(v) => {
             setData((d) => ({ ...d, watermark: { ...d.watermark, show: v } }));
-            if (!v) snack('已去掉水印。喜欢的话，帮我提一句出处就好。');
+            if (!v) snack('去掉了。有人问起，说一声这是哪做的就行。');
           }}
           label="保留小水印"
         />

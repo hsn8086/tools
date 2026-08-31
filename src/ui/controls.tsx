@@ -87,9 +87,10 @@ export function Slider({
   onChange: (v: number) => void;
   label: string;
 }) {
-  const pct = ((value - min) / (max - min)) * 100;
+  // 传 0..1 的纯数字：CSS 里要拿它去乘百分比算位置，带单位就没法算了
+  const t = (value - min) / (max - min);
   return (
-    <div className="slider" style={{ ['--v' as string]: `${pct}%` }}>
+    <div className="slider" style={{ ['--v' as string]: t }}>
       <span className="rail" />
       <span className="fill" />
       <span className="handle" />
