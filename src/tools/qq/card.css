@@ -1,0 +1,250 @@
+/* iOS QQ（浅色）聊天记录。
+   尺寸沿用 projects/qq-gen 从参考图 828×2273 @2x 反推的那一套，
+   按 414pt 逻辑宽度排版：
+     背景 #ECEDF1 / 气泡 #FFFFFF / 引用块 #E5E5E5 / 次要文字 #8B8E95
+     头像 40px @ left:12px，气泡左边缘 60px（12 + 40 + 8）
+     正文 17px / 21.5px，昵称 11px，时间分割线 12px
+     气泡 radius 10px，padding 9px 10px，最大宽度 300px
+   深色值是按同一套结构配的。 */
+
+:host {
+  all: initial;
+  display: block;
+  contain: paint;
+}
+
+.qq {
+  --bg: #ecedf1;
+  --bubble: #ffffff;
+  --self: #0099ff;
+  --self-text: #ffffff;
+  --meta: #8b8e95;
+  --text: #131314;
+  --sep: #dcdde1;
+  --bar: #f7f7f8;
+  --mark: rgba(0, 0, 0, 0.16);
+  --status: #131314;
+
+  width: 414px;
+  position: relative;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.qq[data-theme='dark'] {
+  --bg: #111113;
+  --bubble: #232326;
+  --self: #0a84ff;
+  --self-text: #ffffff;
+  --meta: #7e8188;
+  --text: #e6e6e8;
+  --sep: #2a2a2e;
+  --bar: #1a1a1d;
+  --mark: rgba(255, 255, 255, 0.22);
+  --status: #e6e6e8;
+}
+
+.qq * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- 状态栏 ---------- */
+
+.status {
+  height: 44px;
+  padding: 0 20px 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bar);
+  color: var(--status);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  position: relative;
+}
+
+.status .island {
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  transform: translateX(-50%);
+  width: 92px;
+  height: 30px;
+  background: #000;
+  border-radius: 999px;
+}
+
+.status .right {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ---------- 标题栏 ---------- */
+
+.header {
+  height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bar);
+  border-bottom: 0.5px solid var(--sep);
+  position: relative;
+}
+
+.header .title {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 22px;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header .subtitle {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--meta);
+}
+
+/* 左上角返回箭头 */
+.header .back {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  width: 11px;
+  height: 19px;
+  transform: translateY(-50%);
+  color: var(--text);
+}
+
+.list {
+  padding: 10px 12px 14px;
+}
+
+/* ---------- 时间分割线 ---------- */
+
+.tsep {
+  text-align: center;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--meta);
+  margin: 10px 0 14px;
+}
+
+/* ---------- 一条消息 ---------- */
+
+.msg {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 12px;
+}
+
+.list > *:first-child .msg,
+.list > .msg:first-child {
+  margin-top: 0;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex: 0 0 40px;
+  object-fit: cover;
+  background: #d8d9dd;
+}
+
+.col {
+  margin-left: 8px;
+  min-width: 0;
+  max-width: 300px;
+}
+
+.name {
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--meta);
+  margin: 0 0 9px 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- 气泡 ---------- */
+
+.bubble {
+  background: var(--bubble);
+  border-radius: 10px;
+  padding: 9px 10px;
+  font-size: 17px;
+  line-height: 21.5px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+  display: inline-block;
+  max-width: 100%;
+  text-align: left;
+  white-space: pre-wrap;
+}
+
+.lnk {
+  color: #2b6cd4;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.at {
+  color: #2b6cd4;
+}
+
+/* ---------- 自己发的：靠右、蓝气泡、不显示昵称 ---------- */
+
+.msg[data-self='true'] {
+  flex-direction: row-reverse;
+}
+
+.msg[data-self='true'] .col {
+  margin-left: 0;
+  margin-right: 8px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.msg[data-self='true'] .bubble {
+  background: var(--self);
+  color: var(--self-text);
+}
+
+.msg[data-self='true'] .lnk,
+.msg[data-self='true'] .at {
+  color: #dff0ff;
+}
+
+/* ---------- 纯图片消息（不套气泡，QQ 就是这么画的） ---------- */
+
+.pic {
+  display: block;
+  max-width: 192px;
+  max-height: 240px;
+  border-radius: 8px;
+}
+
+/* ---------- 水印 ---------- */
+
+.watermark {
+  position: absolute;
+  right: 8px;
+  bottom: 6px;
+  font-size: 9px;
+  letter-spacing: 0.2px;
+  color: var(--mark);
+  pointer-events: none;
+}

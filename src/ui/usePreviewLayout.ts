@@ -6,7 +6,6 @@ const COLLAPSE_DISTANCE = 200;
 const COLLAPSE_TO = 0.62;
 /** 再小就真看不清了，到这就不再缩，改成裁切 + 底部渐隐 */
 const MIN_SCALE = 0.42;
-const CARD_W = 375;
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
@@ -37,12 +36,16 @@ export function usePreviewLayout(
     let fitW = 1;
     let availH = 0;
     let cardH = 0;
+    let cardW = 375;
 
     const measure = () => {
       const isMobile = mobile.matches;
-      // 卡片永远是 375px 宽，容器窄了就整体缩，绝不改卡片内部尺寸
-      fitW = clamp((frame.clientWidth - (isMobile ? 0 : 32)) / CARD_W, 0.1, 1);
-      cardH = card.offsetHeight || 1;
+      // 量 shadow root 里那张卡片本身：host 的宽度是被容器撑出来的，
+      // 量它只会量回容器宽（知乎 375、QQ 414 就分不出来了）
+      const el = (card.shadowRoot?.firstElementChild as HTMLElement | null) ?? card;
+      cardW = el.offsetWidth || 375;
+      cardH = el.offsetHeight || 1;
+      fitW = clamp((frame.clientWidth - (isMobile ? 0 : 32)) / cardW, 0.1, 1);
       availH = isMobile
         ? window.innerHeight * 0.46
         : // 桌面端：吸顶位置往下到视口底部，留出操作行和内边距
@@ -58,6 +61,7 @@ export function usePreviewLayout(
       const scale = clamp(Math.min(fitW, room / cardH), MIN_SCALE, 1);
       const shown = Math.min(cardH * scale, room);
 
+      inner.style.width = `${cardW}px`;
       inner.style.transform = `scale(${scale})`;
       frame.style.height = `${shown}px`;
       // 只有真的没装下才需要渐隐提示
@@ -70,7 +74,9 @@ export function usePreviewLayout(
 
     const ro = new ResizeObserver(measure);
     ro.observe(frame);
-    ro.observe(card);
+    // 内容变高要重新算，所以盯的是卡片本体而不是 host
+    const inCard = (card.shadowRoot?.firstElementChild as HTMLElement | null) ?? card;
+    ro.observe(inCard);
 
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', measure);

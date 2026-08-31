@@ -1,6 +1,7 @@
 import { Fragment, type ReactNode } from 'react';
 import type { ZhihuData } from './types';
-import { Badge, Chevron, DoubleChevronDown, HeadphoneIcon, Plus, ShareIcon, StatusIcons } from './icons';
+import { Badge, Chevron, DoubleChevronDown, HeadphoneIcon, Plus, ShareIcon } from './icons';
+import { StatusBar } from '../../ui/StatusBar';
 import { deriveBlocks } from './content';
 
 /** 极简行内语法：**加粗**、[[蓝色链接]] */
@@ -35,15 +36,7 @@ export function ZhihuCard({ data }: { data: ZhihuData }) {
 
   return (
     <div className="zh" data-theme={data.theme}>
-      {sb.show && (
-        <div className="status">
-          {sb.island && <div className="island" />}
-          <div className="time">{sb.time}</div>
-          <div className="right">
-            <StatusIcons battery={sb.battery} />
-          </div>
-        </div>
-      )}
+      {sb.show && <StatusBar time={sb.time} battery={sb.battery} island={sb.island} />}
 
       {q.show && (
         <>
