@@ -4,21 +4,12 @@ import { applyTheme, watchSystem, DEFAULT_SEED, type Mode } from './design/theme
 import { IconButton, Segmented } from './ui/controls';
 import { IconBack } from './ui/icons';
 import { SnackbarProvider } from './ui/Snackbar';
+import { navigate, onNavClick, useRoute } from './router';
 
 const MODE_KEY = 'tools.mode';
 
-function useHashRoute() {
-  const [hash, setHash] = useState(() => location.hash.replace(/^#\/?/, ''));
-  useEffect(() => {
-    const on = () => setHash(location.hash.replace(/^#\/?/, ''));
-    window.addEventListener('hashchange', on);
-    return () => window.removeEventListener('hashchange', on);
-  }, []);
-  return hash;
-}
-
 export function App() {
-  const route = useHashRoute();
+  const route = useRoute();
   const [mode, setMode] = useState<Mode>(() => (localStorage.getItem(MODE_KEY) as Mode) || 'system');
   const tool = findTool(route);
 
@@ -37,7 +28,7 @@ export function App() {
     <SnackbarProvider>
       <header className="app-bar">
         {tool && (
-          <IconButton label="返回" onClick={() => (location.hash = '')}>
+          <IconButton label="返回" onClick={() => navigate('/')}>
             <IconBack />
           </IconButton>
         )}
@@ -75,16 +66,17 @@ function Home() {
       </div>
       <div className="grid">
         {tools.map((t, i) => (
-          <button
+          <a
             key={t.id}
             className="tool-card"
+            href={`/${t.id}`}
             style={{ animationDelay: `${i * 40}ms` }}
-            onClick={() => (location.hash = `/${t.id}`)}
+            onClick={onNavClick(`/${t.id}`)}
           >
             <span className="emoji">{t.emoji}</span>
             <h3>{t.name}</h3>
             <p>{t.desc}</p>
-          </button>
+          </a>
         ))}
       </div>
     </>

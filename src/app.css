@@ -515,6 +515,7 @@ select {
 .tool-card {
   display: block;
   text-align: left;
+  text-decoration: none;
   padding: var(--sp-5);
   border: none;
   border-radius: var(--shape-xl);
