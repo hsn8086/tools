@@ -8,3 +8,4 @@ tsconfig.tsbuildinfo
 # 设计参考用的原始截图，不进仓库
 ref/
 v2-*.jpg
+.env

@@ -10,6 +10,23 @@
 
 **QQ 聊天记录生成器** (`/qq`) —— 把对话写成「昵称：内容」的剧本，渲染成 iOS QQ 风格的截图。尺寸沿用 [qq-gen](https://github.com/hsn8086) 从真实截图 828×2273 @2x 反推的那一套，按 414pt 排版。标成「我」的人靠右显示，都不标就是合并转发那种全部靠左的样子。
 
+## 访问统计
+
+用的是 Cloudflare Web Analytics：不写 cookie、不碰 localStorage、不采集能定位到人的东西，
+只有页面浏览量和来源这类聚合数据。图片依旧不出你的设备。
+
+统计脚本只在配了 beacon token 时注入，而且只在打包时注入，dev 下不注入：
+
+```sh
+cp .env.example .env
+# 填上 VITE_CF_BEACON，token 在 Cloudflare Dashboard →
+# Analytics & Logs → Web Analytics → 站点 → Manage site 里
+```
+
+不配就完全不注入，clone 下来自己跑不会给任何人发数据。
+
+Cloudflare 代理下的域名也可以在 Dashboard 里直接开自动注入，那样连 token 都不用配。
+
 ## 本地跑
 
 ```sh
