@@ -1,4 +1,5 @@
 import type { QQData } from './types';
+import { faceUrl, FACES } from './faces';
 
 export const WATERMARK_HOST = 'tools.hsn8086.com';
 
@@ -12,27 +13,34 @@ export function letterAvatar(name: string): string {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
+/** 没指定头像时，按名字稳定地挑一张经典小黄脸 */
+export function pickFace(name: string): string {
+  let h = 0;
+  for (const c of name) h = (h * 31 + c.charCodeAt(0)) % FACES.length;
+  return faceUrl(FACES[h].id);
+}
+
 export const defaultData = (): QQData => ({
   script: [
-    '[21:18]',
-    '海月：这题的状压 DP 我看了一晚上还是没懂',
-    '茯茶：先把二进制枚举子集那块单独拎出来写一遍',
-    '茯茶：把状态想成"哪些位置已经放好了"，转移就顺了',
-    '海月：懂了一点',
-    '海月：喵呜',
-    '[21:27]',
-    '猪猪哟：那你还挺厉害的，我连暴力都写不对',
-    '蒟酱：建议先把背包和树形 DP 过一遍再碰状压',
-    '海月：好的喵',
+    '[20:14]',
+    '土豆：下周三团建，报名的在群里冒个泡',
+    '土豆：地点还没定，有想去的地方说一声',
+    '芝麻糊：密室吧，上次那家评价挺好的',
+    '我：+1，密室好',
+    '[20:31]',
+    '小鹿：我恐高，别选高空项目就行',
+    '芝麻糊：密室不高，放心',
+    '我：那就这么定了，我去问价',
   ].join('\n'),
   people: [
-    { name: '海月', avatar: letterAvatar('海月'), self: false },
-    { name: '茯茶', avatar: letterAvatar('茯茶'), self: false },
-    { name: '猪猪哟', avatar: letterAvatar('猪猪哟'), self: false },
-    { name: '蒟酱', avatar: letterAvatar('蒟酱'), self: false },
+    { name: '土豆', avatar: pickFace('土豆'), self: false, title: '群主' },
+    { name: '芝麻糊', avatar: pickFace('芝麻糊'), self: false, title: '管理员' },
+    { name: '我', avatar: pickFace('我'), self: true, title: '' },
+    { name: '小鹿', avatar: pickFace('小鹿'), self: false, title: '' },
   ],
   images: [],
-  header: { show: true, title: '算法交流群', subtitle: '(48)' },
+  header: { show: true, title: '摸鱼交流中心(48)', unread: '12' },
+  inputBar: true,
   statusBar: { show: false, time: '9:41', battery: 82, island: true },
   watermark: { show: true, text: `${WATERMARK_HOST}/qq` },
 });

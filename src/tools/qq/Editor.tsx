@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import cardCss from './card.css?inline';
 import { QQCard } from './Card';
-import { defaultData, letterAvatar, WATERMARK_HOST } from './defaults';
+import { defaultData, pickFace, WATERMARK_HOST } from './defaults';
+import { FACES, faceUrl } from './faces';
 import { IMG_MARK, syncPeople } from './script';
 import type { QQData } from './types';
 import { usePreviewLayout } from '../../ui/usePreviewLayout';
@@ -17,7 +18,17 @@ function load(): QQData {
   try {
     const raw = localStorage.getItem(STORE_KEY);
     if (!raw) return defaultData();
-    return { ...defaultData(), ...(JSON.parse(raw) as QQData) };
+    const d = defaultData();
+    const s = JSON.parse(raw) as Partial<QQData>;
+    // 嵌套对象要逐层并，不然旧存档少一个字段就会在渲染时炸
+    return {
+      ...d,
+      ...s,
+      header: { ...d.header, ...s.header },
+      statusBar: { ...d.statusBar, ...s.statusBar },
+      watermark: { ...d.watermark, ...s.watermark },
+      people: (s.people ?? d.people).map((p) => ({ ...p, title: p.title ?? '' })),
+    };
   } catch {
     return defaultData();
   }
@@ -38,6 +49,7 @@ export function QQEditor() {
   const [data, setData] = useState<QQData>(load);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [exporting, setExporting] = useState(false);
+  const [picking, setPicking] = useState<string | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
@@ -58,7 +70,7 @@ export function QQEditor() {
     if (!missing.length) return;
     setData((d) => ({
       ...d,
-      people: syncPeople(d, '').map((p) => (p.avatar ? p : { ...p, avatar: letterAvatar(p.name) })),
+      people: syncPeople(d, '').map((p) => (p.avatar ? p : { ...p, avatar: pickFace(p.name) })),
     }));
   }, [people]);
 
@@ -120,15 +132,20 @@ export function QQEditor() {
             </div>
             <div className="row">
               <Switch checked={data.header.show} onChange={(v) => patch('header', { show: v })} label="标题栏" />
+              <Switch checked={data.inputBar} onChange={(v) => setData((d) => ({ ...d, inputBar: v }))} label="输入栏" />
               <Switch checked={data.statusBar.show} onChange={(v) => patch('statusBar', { show: v })} label="手机状态栏" />
             </div>
             {data.header.show && (
               <div className="row">
                 <div className="grow">
-                  <TextField label="标题" value={data.header.title} onChange={(v) => patch('header', { title: v })} />
+                  <TextField
+                    label="群名（人数直接写进去）"
+                    value={data.header.title}
+                    onChange={(v) => patch('header', { title: v })}
+                  />
                 </div>
-                <div style={{ width: 110 }}>
-                  <TextField label="人数" value={data.header.subtitle} onChange={(v) => patch('header', { subtitle: v })} />
+                <div style={{ width: 96 }}>
+                  <TextField label="未读数" value={data.header.unread} onChange={(v) => patch('header', { unread: v })} />
                 </div>
               </div>
             )}
@@ -178,10 +195,20 @@ export function QQEditor() {
               <div className="people">
                 {data.people.map((p) => (
                   <div className="person" key={p.name}>
-                    <img src={p.avatar} alt="" />
+                    <button
+                      type="button"
+                      className="avatar-btn"
+                      aria-label={`给 ${p.name} 换头像`}
+                      onClick={() => setPicking(picking === p.name ? null : p.name)}
+                    >
+                      <img src={p.avatar} alt="" />
+                    </button>
                     <span className="pname">{p.name}</span>
+                    <div style={{ width: 92 }}>
+                      <TextField label="头衔" value={p.title} onChange={(v) => setPerson(p.name, { title: v })} />
+                    </div>
                     <PickImage onPick={async (f) => setPerson(p.name, { avatar: await readFile(f) })} variant="text">
-                      换头像
+                      上传
                     </PickImage>
                     <Button
                       variant={p.self ? 'filled' : 'outlined'}
@@ -197,11 +224,28 @@ export function QQEditor() {
                     >
                       <IconDelete />
                     </IconButton>
+                    {picking === p.name && (
+                      <div className="face-grid">
+                        {FACES.map((f) => (
+                          <button
+                            type="button"
+                            key={f.id}
+                            title={f.name}
+                            onClick={() => {
+                              setPerson(p.name, { avatar: faceUrl(f.id) });
+                              setPicking(null);
+                            }}
+                          >
+                            <img src={faceUrl(f.id)} alt={f.name} />
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
             )}
-            <p className="hint">标成「我」的人靠右显示、蓝气泡、不显示昵称。都不标就是合并转发那种全部靠左的样子。</p>
+            <p className="hint">标成「我」的人靠右、蓝气泡，昵称和头衔照常显示。头衔写「群主」是琢珀色，其余都按管理员的青色。</p>
           </Section>
 
           {data.images.length > 0 && (

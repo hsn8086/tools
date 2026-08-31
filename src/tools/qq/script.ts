@@ -76,7 +76,7 @@ export function syncPeople(data: QQData, fallbackAvatar: string): QQData['people
   const kept = data.people.filter((p) => names.includes(p.name));
   const added = names
     .filter((n) => !data.people.some((p) => p.name === n))
-    .map((name) => ({ name, avatar: fallbackAvatar, self: false }));
+    .map((name) => ({ name, avatar: fallbackAvatar, self: false, title: '' }));
   const orphans = data.people.filter((p) => !names.includes(p.name) && p.avatar !== fallbackAvatar);
   return [...kept, ...added, ...orphans];
 }

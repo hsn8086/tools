@@ -2,8 +2,10 @@ export interface QQPerson {
   /** 用剧本里出现的昵称当 key */
   name: string;
   avatar: string;
-  /** 标记成「我」：靠右、蓝气泡、不显示昵称 */
+  /** 标记成「我」：靠右、蓝气泡，昵称照常显示在气泡上方 */
   self: boolean;
+  /** 头衔，昵称前面那个小标签。「群主」是琥珀色，其余按管理员的青色 */
+  title: string;
 }
 
 export type QQItem =
@@ -18,10 +20,14 @@ export interface QQData {
 
   header: {
     show: boolean;
+    /** 群名，人数就直接写进去：hsn的神秘巨大猫窝(229) */
     title: string;
-    /** 副标题，群聊人数之类 */
-    subtitle: string;
+    /** 返回箭头右边那颗未读数气泡，留空就不画 */
+    unread: string;
   };
+
+  /** 底部输入栏，真实截图里一般都带着 */
+  inputBar: boolean;
 
   statusBar: {
     show: boolean;

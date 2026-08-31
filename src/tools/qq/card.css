@@ -1,11 +1,11 @@
-/* iOS QQ（浅色）聊天记录。
-   尺寸沿用 projects/qq-gen 从参考图 828×2273 @2x 反推的那一套，
-   按 414pt 逻辑宽度排版：
-     背景 #ECEDF1 / 气泡 #FFFFFF / 引用块 #E5E5E5 / 次要文字 #8B8E95
+/* QQ 聊天窗口（浅色）。
+   正文尺寸沿用 projects/qq-gen 从 828×2273 @2x 反推的那套，按 414pt 排版：
      头像 40px @ left:12px，气泡左边缘 60px（12 + 40 + 8）
-     正文 17px / 21.5px，昵称 11px，时间分割线 12px
-     气泡 radius 10px，padding 9px 10px，最大宽度 300px
-   深色值是按同一套结构配的。 */
+     正文 17px / 21.5px，气泡 radius 10px，padding 9px 10px，最大宽 300px
+   标题栏、头衔标签、自己那一侧的排布按实机截图 IMG_5441 定：
+     标题左对齐（不是居中），返回箭头 → 未读气泡 → 群名，右边汉堡菜单
+     自己发的消息头像在右，昵称和头衔照常显示在气泡上方、靠右
+   深色值按同一套结构配。 */
 
 :host {
   all: initial;
@@ -14,14 +14,16 @@
 }
 
 .qq {
-  --bg: #ecedf1;
+  --bg: #f2f2f2;
   --bubble: #ffffff;
   --self: #0099ff;
   --self-text: #ffffff;
-  --meta: #8b8e95;
+  --meta: #9a9a9f;
   --text: #131314;
-  --sep: #dcdde1;
-  --bar: #f7f7f8;
+  --pill: #e3e3e5;
+  --pill-text: #5c5c60;
+  --input: #ffffff;
+  --icon: #4a4a4e;
   --mark: rgba(0, 0, 0, 0.16);
   --status: #131314;
 
@@ -42,8 +44,10 @@
   --self-text: #ffffff;
   --meta: #7e8188;
   --text: #e6e6e8;
-  --sep: #2a2a2e;
-  --bar: #1a1a1d;
+  --pill: #2c2c30;
+  --pill-text: #a8a8ad;
+  --input: #232326;
+  --icon: #b6b6ba;
   --mark: rgba(255, 255, 255, 0.22);
   --status: #e6e6e8;
 }
@@ -62,7 +66,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--bar);
   color: var(--status);
   font-size: 15px;
   font-weight: 600;
@@ -88,47 +91,54 @@
 }
 
 /* ---------- 标题栏 ---------- */
+/* 背景和聊天区一样，没有分隔线 —— 实机就是通铺的 */
 
 .header {
-  height: 44px;
+  height: 48px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  background: var(--bar);
-  border-bottom: 0.5px solid var(--sep);
-  position: relative;
+  gap: 8px;
+  padding: 0 14px;
+}
+
+.header .back {
+  width: 11px;
+  height: 19px;
+  flex: 0 0 11px;
+  color: var(--text);
+}
+
+.header .unread {
+  flex: none;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--pill);
+  color: var(--pill-text);
+  font-size: 12px;
+  line-height: 18px;
 }
 
 .header .title {
+  flex: 1;
+  min-width: 0;
   font-size: 17px;
   font-weight: 600;
-  line-height: 22px;
-  max-width: 240px;
+  line-height: 24px;
+  letter-spacing: -0.1px;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.header .subtitle {
-  font-size: 11px;
-  line-height: 14px;
-  color: var(--meta);
-}
-
-/* 左上角返回箭头 */
-.header .back {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  width: 11px;
-  height: 19px;
-  transform: translateY(-50%);
+.header .menu {
+  width: 22px;
+  height: 16px;
+  flex: 0 0 22px;
   color: var(--text);
 }
 
 .list {
-  padding: 10px 12px 14px;
+  padding: 4px 12px 14px;
 }
 
 /* ---------- 时间分割线 ---------- */
@@ -149,8 +159,7 @@
   margin-top: 12px;
 }
 
-.list > *:first-child .msg,
-.list > .msg:first-child {
+.list > *:first-child {
   margin-top: 0;
 }
 
@@ -170,13 +179,45 @@
 }
 
 .name {
-  font-size: 11px;
-  line-height: 15px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  line-height: 18px;
   color: var(--meta);
-  margin: 0 0 9px 2px;
+  margin: 0 0 6px 2px;
   white-space: nowrap;
+}
+
+.name .who {
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* 头衔标签 */
+.tag {
+  flex: none;
+  padding: 0 4px;
+  border-radius: 3px;
+  font-size: 11px;
+  line-height: 16px;
+  background: #cff0ea;
+  color: #0e8878;
+}
+
+.tag[data-kind='owner'] {
+  background: #ffe9a0;
+  color: #9a6a06;
+}
+
+.qq[data-theme='dark'] .tag {
+  background: #113b35;
+  color: #4fd3bd;
+}
+
+.qq[data-theme='dark'] .tag[data-kind='owner'] {
+  background: #3d2f08;
+  color: #e5bb4d;
 }
 
 /* ---------- 气泡 ---------- */
@@ -205,7 +246,7 @@
   color: #2b6cd4;
 }
 
-/* ---------- 自己发的：靠右、蓝气泡、不显示昵称 ---------- */
+/* ---------- 自己发的：整行翻过来，昵称和头衔照常显示 ---------- */
 
 .msg[data-self='true'] {
   flex-direction: row-reverse;
@@ -215,7 +256,13 @@
   margin-left: 0;
   margin-right: 8px;
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.msg[data-self='true'] .name {
+  flex-direction: row;
+  margin: 0 2px 6px 0;
 }
 
 .msg[data-self='true'] .bubble {
@@ -235,6 +282,24 @@
   max-width: 192px;
   max-height: 240px;
   border-radius: 8px;
+}
+
+/* ---------- 底部输入栏 ---------- */
+
+.inputbar {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 14px;
+  color: var(--icon);
+}
+
+.inputbar .box {
+  flex: 1;
+  height: 36px;
+  border-radius: 6px;
+  background: var(--input);
 }
 
 /* ---------- 水印 ---------- */
