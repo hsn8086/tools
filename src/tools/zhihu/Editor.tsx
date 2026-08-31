@@ -10,6 +10,8 @@ import { Button, IconButton, Segmented, Switch, TextField } from '../../ui/contr
 import { IconBold, IconDelete, IconDice, IconExport, IconImage, IconLink, IconPerson } from '../../ui/icons';
 import { randAnswerCount, randCount, randDate, randProvince, randSmallCount } from '../../ui/random';
 import { ExportSheet } from '../../export/ExportSheet';
+import { AvatarPicker } from '../../ui/AvatarPicker';
+import { readImageFile } from '../../ui/file';
 
 const STORE_KEY = 'tools.zhihu.v1';
 
@@ -37,14 +39,6 @@ function load(): ZhihuData {
   return defaultData();
 }
 
-function readFile(file: File): Promise<string> {
-  return new Promise((res, rej) => {
-    const fr = new FileReader();
-    fr.onload = () => res(String(fr.result));
-    fr.onerror = () => rej(fr.error);
-    fr.readAsDataURL(file);
-  });
-}
 
 function PickImage({
   onPick,
@@ -67,7 +61,7 @@ function PickImage({
         hidden
         onChange={async (e) => {
           const f = e.target.files?.[0];
-          if (f) onPick(await readFile(f));
+          if (f) onPick(await readImageFile(f));
           e.target.value = '';
         }}
       />
@@ -190,15 +184,18 @@ export function ZhihuEditor() {
 
           <Section title="答主">
             <div className="avatar-row">
-              <img src={data.author.avatar} alt="" />
+              <AvatarPicker
+                src={data.author.avatar}
+                label="换头像"
+                size={56}
+                onPick={(src) => patch('author', { avatar: src })}
+                onReset={data.author.avatar === ANON_AVATAR ? undefined : () => patch('author', { avatar: ANON_AVATAR })}
+              />
               <div className="grow">
                 <TextField label="昵称" value={data.author.name} onChange={(v) => patch('author', { name: v })} />
               </div>
             </div>
             <div className="row">
-              <PickImage onPick={(src) => patch('author', { avatar: src })} icon={<IconImage />}>
-                换头像
-              </PickImage>
               <Button
                
                 variant={anonymous ? 'filled' : 'outlined'}
@@ -209,7 +206,7 @@ export function ZhihuEditor() {
               </Button>
             </div>
             {anonymous ? (
-              <p className="helper">匿名回答不显示关注按钮、签名和认证角标 —— 和知乎一致。</p>
+              <p className="helper">点头像换图，拖进来或者直接粘贴也行。匿名回答不显示关注按钮、签名和认证角标 —— 和知乎一致。</p>
             ) : (
               <>
                 <TextField label="签名" value={data.author.headline} onChange={(v) => patch('author', { headline: v })} />

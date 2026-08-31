@@ -2,18 +2,31 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import cardCss from './card.css?inline';
 import { QQCard } from './Card';
 import { DEFAULT_AVATAR, defaultData, WATERMARK_HOST } from './defaults';
-import { FACES, faceUrl } from './faces';
-import { IMG_MARK, syncPeople } from './script';
-import type { QQData } from './types';
+import { IMG_MARK, peopleInScript } from './script';
+import type { PersonAttrs, QQData } from './types';
 import { usePreviewLayout } from '../../ui/usePreviewLayout';
 import { ShadowScope } from '../../ui/ShadowScope';
 import { Button, IconButton, Segmented, Switch, TextField } from '../../ui/controls';
 import { IconDelete, IconDice, IconExport, IconImage, IconPerson } from '../../ui/icons';
+import { AvatarPicker } from '../../ui/AvatarPicker';
+import { readImageFile } from '../../ui/file';
 import { pick, randClock, randInt } from '../../ui/random';
 import { ExportSheet } from '../../export/ExportSheet';
 import { useSnackbar } from '../../ui/Snackbar';
 
 const STORE_KEY = 'tools.qq.v1';
+
+/** 旧存档存的是 people 数组，转成按昵称索引的 roster */
+function rosterFromLegacy(s: Record<string, unknown>): QQData['roster'] {
+  const legacy = s.people;
+  if (!Array.isArray(legacy)) return defaultData().roster;
+  return Object.fromEntries(
+    legacy.map((p: { name: string; avatar?: string; self?: boolean; title?: string }) => [
+      p.name,
+      { avatar: p.avatar ?? DEFAULT_AVATAR, self: p.self ?? false, title: p.title ?? '' },
+    ])
+  );
+}
 
 function load(): QQData {
   try {
@@ -28,21 +41,13 @@ function load(): QQData {
       header: { ...d.header, ...s.header },
       statusBar: { ...d.statusBar, ...s.statusBar },
       watermark: { ...d.watermark, ...s.watermark },
-      people: (s.people ?? d.people).map((p) => ({ ...p, title: p.title ?? '' })),
+      roster: { ...(s.roster ?? rosterFromLegacy(s)) },
     };
   } catch {
     return defaultData();
   }
 }
 
-function readFile(file: File): Promise<string> {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload = () => res(String(r.result));
-    r.onerror = () => rej(new Error('读不了这个文件'));
-    r.readAsDataURL(file);
-  });
-}
 
 let imgSeq = 0;
 
@@ -50,7 +55,6 @@ export function QQEditor() {
   const [data, setData] = useState<QQData>(load);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [exporting, setExporting] = useState(false);
-  const [picking, setPicking] = useState<string | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
@@ -64,26 +68,27 @@ export function QQEditor() {
     return () => clearTimeout(t);
   }, [data]);
 
-  // 剧本里新出现的名字自动补一个首字头像
-  const people = useMemo(() => syncPeople(data, ''), [data]);
-  useEffect(() => {
-    const missing = people.filter((p) => !p.avatar);
-    if (!missing.length) return;
-    setData((d) => ({
-      ...d,
-      people: syncPeople(d, '').map((p) => (p.avatar ? p : { ...p, avatar: DEFAULT_AVATAR })),
-    }));
-  }, [people]);
+  /**
+   * 成员列表完全由剧本推出来，不落在 state 里。
+   * 之前是「解析出新名字就往 people 里塞一条」，打字打到
+   * 「张三」的过程中会先后塞进「张」和「张三」，一句话打完
+   * 多出一串半截人名。现在没写进剧本的名字根本不存在。
+   */
+  const people = useMemo(() => peopleInScript(data, DEFAULT_AVATAR), [data.script, data.roster]);
 
-  const setPerson = useCallback((name: string, patch: Partial<QQData['people'][number]>) => {
-    setData((d) => ({
-      ...d,
-      people: d.people.map((p) => (p.name === name ? { ...p, ...patch } : patch.self ? { ...p, self: false } : p)),
-    }));
+  const setPerson = useCallback((name: string, patch: Partial<PersonAttrs>) => {
+    setData((d) => {
+      const roster = { ...d.roster };
+      const cur: PersonAttrs = roster[name] ?? { avatar: DEFAULT_AVATAR, self: false, title: '' };
+      // 「我」同时只能有一个
+      if (patch.self) for (const k of Object.keys(roster)) roster[k] = { ...roster[k], self: false };
+      roster[name] = { ...cur, ...patch };
+      return { ...d, roster };
+    });
   }, []);
 
   const insertImage = useCallback(async (file: File) => {
-    const src = await readFile(file);
+    const src = await readImageFile(file);
     const id = `img${Date.now().toString(36)}${imgSeq++}`;
     const ta = scriptRef.current;
     setData((d) => {
@@ -206,27 +211,23 @@ export function QQEditor() {
           </Section>
 
           <Section title="成员">
-            {data.people.length === 0 ? (
+            {people.length === 0 ? (
               <p className="hint">上面写了「昵称：内容」之后，这里会列出所有人。</p>
             ) : (
               <div className="people">
-                {data.people.map((p) => (
+                {people.map((p) => (
                   <div className="person" key={p.name}>
-                    <button
-                      type="button"
-                      className="avatar-btn"
-                      aria-label={`给 ${p.name} 换头像`}
-                      onClick={() => setPicking(picking === p.name ? null : p.name)}
-                    >
-                      <img src={p.avatar} alt="" />
-                    </button>
+                    <AvatarPicker
+                      src={p.avatar}
+                      label={`给 ${p.name} 换头像`}
+                      size={40}
+                      onPick={(src) => setPerson(p.name, { avatar: src })}
+                      onReset={p.avatar === DEFAULT_AVATAR ? undefined : () => setPerson(p.name, { avatar: DEFAULT_AVATAR })}
+                    />
                     <span className="pname">{p.name}</span>
                     <div style={{ width: 92 }}>
                       <TextField label="头衔" value={p.title} onChange={(v) => setPerson(p.name, { title: v })} />
                     </div>
-                    <PickImage onPick={async (f) => setPerson(p.name, { avatar: await readFile(f) })} variant="text">
-                      上传
-                    </PickImage>
                     <Button
                       variant={p.self ? 'filled' : 'outlined'}
                       size="sm"
@@ -235,34 +236,13 @@ export function QQEditor() {
                     >
                       我
                     </Button>
-                    <IconButton
-                      label="删除"
-                      onClick={() => setData((d) => ({ ...d, people: d.people.filter((x) => x.name !== p.name) }))}
-                    >
-                      <IconDelete />
-                    </IconButton>
-                    {picking === p.name && (
-                      <div className="face-grid">
-                        {FACES.map((f) => (
-                          <button
-                            type="button"
-                            key={f.id}
-                            title={f.name}
-                            onClick={() => {
-                              setPerson(p.name, { avatar: faceUrl(f.id) });
-                              setPicking(null);
-                            }}
-                          >
-                            <img src={faceUrl(f.id)} alt={f.name} />
-                          </button>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
             )}
-            <p className="hint">标成「我」的人靠右、蓝气泡，昵称和头衔照常显示。头衔写「群主」是琢珀色，其余都按管理员的青色。</p>
+            <p className="hint">
+              点头像换图，把图拖上去或者直接粘贴也行。标成「我」的人靠右、蓝气泡。头衔写「群主」是琢珀色，其余都按管理员的青色。
+            </p>
           </Section>
 
           {data.images.length > 0 && (

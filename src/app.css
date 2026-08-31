@@ -752,7 +752,7 @@ select {
   gap: var(--sp-3);
 }
 
-.avatar-row img {
+.avatar-row > img {
   width: 56px;
   height: 56px;
   flex: none;
@@ -1057,63 +1057,107 @@ select {
   font-size: 0.92em;
 }
 
-/* ---- QQ 生成器：头像选择 ---- */
+/* ---- 头像选择：头像自己就是按钮 ---- */
 
-.person {
+.avatar-pick {
   position: relative;
-  flex-wrap: wrap;
+  flex: 0 0 var(--sz);
+  width: var(--sz);
+  height: var(--sz);
 }
 
-.avatar-btn {
-  flex: 0 0 36px;
+.avatar-pick > button:first-of-type {
+  width: 100%;
+  height: 100%;
   padding: 0;
   border: none;
-  background: none;
   border-radius: 50%;
+  background: var(--md-surface-container-highest);
   cursor: pointer;
-  transition: transform var(--dur-press) var(--ease-out);
+  overflow: hidden;
+  position: relative;
+  display: block;
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    box-shadow var(--dur-quick) ease;
 }
 
-.avatar-btn:active {
-  transform: scale(0.92);
+.avatar-pick img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
-.face-grid {
-  flex-basis: 100%;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
-  gap: 2px;
-  margin-top: var(--sp-2);
-  padding-top: var(--sp-2);
-  border-top: 1px solid var(--md-outline-variant);
-}
-
-.face-grid button {
+/* 相机图标平时藏着，指上去或者拖图过来才浮出来 */
+.avatar-pick .veil {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
-  border: none;
-  border-radius: var(--shape-sm);
-  background: none;
-  cursor: pointer;
-  transition:
-    background var(--dur-press) ease,
-    transform var(--dur-press) var(--ease-out);
+  color: #fff;
+  background: rgba(0, 0, 0, 0.46);
+  opacity: 0;
+  transition: opacity var(--dur-quick) ease;
 }
 
-.face-grid button:active {
-  transform: scale(0.88);
+.avatar-pick .veil svg {
+  width: calc(var(--sz) * 0.42);
+  height: calc(var(--sz) * 0.42);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .face-grid button:hover {
-    background: var(--md-surface-container-highest);
+  .avatar-pick > button:first-of-type:hover .veil {
+    opacity: 1;
   }
 }
 
-.face-grid img {
-  width: 28px;
-  height: 28px;
-  display: block;
+.avatar-pick > button:first-of-type:focus-visible {
+  outline: 3px solid var(--md-primary);
+  outline-offset: 2px;
+}
+
+.avatar-pick > button:first-of-type:active {
+  transform: scale(0.92);
+}
+
+/* 拖图悬停：整颗放大一点 + 描边，落点非常明确 */
+.avatar-pick[data-over] > button:first-of-type {
+  transform: scale(1.06);
+  box-shadow: 0 0 0 3px var(--md-primary);
+}
+
+.avatar-pick[data-over] .veil {
+  opacity: 1;
+}
+
+.avatar-pick .reset {
+  position: absolute;
+  right: -4px;
+  top: -4px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--md-surface-container-low);
+  border-radius: 50%;
+  background: var(--md-surface-container-highest);
+  color: var(--md-on-surface-variant);
+  cursor: pointer;
+}
+
+.avatar-pick .reset svg {
+  width: 12px;
+  height: 12px;
+}
+
+.avatar-pick .reset:active {
+  transform: scale(0.88);
+}
+
+.person {
+  flex-wrap: wrap;
 }

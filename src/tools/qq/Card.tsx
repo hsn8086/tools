@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react';
 import type { QQData } from './types';
-import { parseScript } from './script';
+import { DEFAULT_AVATAR } from './defaults';
+import { attrsOf, parseScript } from './script';
 import { StatusBar } from '../../ui/StatusBar';
 
 /** 行内语法：@某人 和 http 链接自动上色，和 QQ 一致 */
@@ -54,7 +55,7 @@ const InputBar = () => (
 
 export function QQCard({ data, theme }: { data: QQData; theme: 'light' | 'dark' }) {
   const items = parseScript(data.script);
-  const person = (name: string) => data.people.find((p) => p.name === name);
+  const person = (name: string) => attrsOf(data, name, DEFAULT_AVATAR);
   const image = (id?: string) => (id ? data.images.find((i) => i.id === id)?.src : undefined);
   const sb = data.statusBar;
 

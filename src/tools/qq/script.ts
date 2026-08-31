@@ -1,4 +1,4 @@
-import type { QQData, QQItem } from './types';
+import type { PersonAttrs, QQData, QQItem, QQPerson } from './types';
 
 export const IMG_MARK = (id: string) => `![${id}]`;
 
@@ -70,13 +70,14 @@ export function namesInScript(script: string): string[] {
   return seen;
 }
 
-/** 让 people 和剧本对齐：新名字补默认头像，消失的名字保留（改回来还在） */
-export function syncPeople(data: QQData, fallbackAvatar: string): QQData['people'] {
-  const names = namesInScript(data.script);
-  const kept = data.people.filter((p) => names.includes(p.name));
-  const added = names
-    .filter((n) => !data.people.some((p) => p.name === n))
-    .map((name) => ({ name, avatar: fallbackAvatar, self: false, title: '' }));
-  const orphans = data.people.filter((p) => !names.includes(p.name) && p.avatar !== fallbackAvatar);
-  return [...kept, ...added, ...orphans];
+/** 剧本里现在有的人，配上各自存着的设定 */
+export function peopleInScript(data: QQData, fallbackAvatar: string): QQPerson[] {
+  return namesInScript(data.script).map((name) => ({
+    name,
+    ...attrsOf(data, name, fallbackAvatar),
+  }));
+}
+
+export function attrsOf(data: QQData, name: string, fallbackAvatar: string): PersonAttrs {
+  return data.roster[name] ?? { avatar: fallbackAvatar, self: false, title: '' };
 }

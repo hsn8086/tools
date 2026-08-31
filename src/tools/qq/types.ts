@@ -1,11 +1,14 @@
-export interface QQPerson {
-  /** 用剧本里出现的昵称当 key */
-  name: string;
+/** 一个人的设定。名字不在里面——名字是剧本里的那个 key */
+export interface PersonAttrs {
   avatar: string;
-  /** 标记成「我」：靠右、蓝气泡，昵称照常显示在气泡上方 */
+  /** 标记成「我」：靠右、蓝气泡 */
   self: boolean;
   /** 头衔，昵称前面那个小标签。「群主」是琥珀色，其余按管理员的青色 */
   title: string;
+}
+
+export interface QQPerson extends PersonAttrs {
+  name: string;
 }
 
 export type QQItem =
@@ -15,7 +18,12 @@ export type QQItem =
 export interface QQData {
   /** 剧本原文，`昵称：内容` 一行一条，见 script.ts */
   script: string;
-  people: QQPerson[];
+  /**
+   * 谁长什么样，按昵称存。
+   * 成员列表只列剧本里眼下有的人，但设定一直留着：
+   * 打字打到一半的半截名字不会堆成一堆人，改个错字也不至于把头像弄丢。
+   */
+  roster: Record<string, PersonAttrs>;
   images: { id: string; src: string }[];
 
   header: {

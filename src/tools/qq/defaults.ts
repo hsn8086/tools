@@ -23,12 +23,11 @@ export const defaultData = (): QQData => ({
     '芝麻糊：密室不高，放心',
     '我：那就这么定了，我去问价',
   ].join('\n'),
-  people: [
-    { name: '土豆', avatar: DEFAULT_AVATAR, self: false, title: '群主' },
-    { name: '芝麻糊', avatar: DEFAULT_AVATAR, self: false, title: '管理员' },
-    { name: '我', avatar: DEFAULT_AVATAR, self: true, title: '' },
-    { name: '小鹿', avatar: DEFAULT_AVATAR, self: false, title: '' },
-  ],
+  roster: {
+    土豆: { avatar: DEFAULT_AVATAR, self: false, title: '群主' },
+    芝麻糊: { avatar: DEFAULT_AVATAR, self: false, title: '管理员' },
+    我: { avatar: DEFAULT_AVATAR, self: true, title: '' },
+  },
   images: [],
   header: { show: true, title: '摸鱼交流中心(48)', unread: '12' },
   inputBar: true,
