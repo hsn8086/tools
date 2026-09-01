@@ -9,3 +9,6 @@ tsconfig.tsbuildinfo
 ref/
 v2-*.jpg
 .env
+
+# 编辑器/代理的本地状态
+.opencode/

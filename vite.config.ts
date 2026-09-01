@@ -16,12 +16,18 @@ function cloudflareAnalytics(token: string | undefined): Plugin {
     name: 'cloudflare-analytics',
     apply: 'build',
     transformIndexHtml() {
-      if (!token) return [];
+      // 没配就不注入，但得喊一声：换台机器构建时 .env 不在，
+      // 静默地少一个脚本好几天都不会发现
+      if (!token) {
+        console.warn('\n没配 VITE_CF_BEACON，这次构建不带访问统计\n');
+        return [];
+      }
       return [
         {
           tag: 'script',
           attrs: {
-            defer: true,
+            // 跟 Cloudflare 给的片段一致：module 天然 defer，不阻渲染
+            type: 'module',
             src: 'https://static.cloudflareinsights.com/beacon.min.js',
             'data-cf-beacon': JSON.stringify({ token }),
           },

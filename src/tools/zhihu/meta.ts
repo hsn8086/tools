@@ -5,6 +5,6 @@ export const meta: ToolMeta = {
   id: 'zhihu',
   name: '知乎生成器',
   emoji: '💭',
-  desc: '自定义问题、回答、头像和昵称，一键生成知乎风格截图',
+  desc: '自定义问答、认证与排版，生成知乎卡片截图',
   Component: lazy(() => import('./Editor').then((m) => ({ default: m.ZhihuEditor }))),
 };

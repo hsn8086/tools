@@ -206,7 +206,7 @@ export function ZhihuEditor() {
               </Button>
             </div>
             {anonymous ? (
-              <p className="helper">点头像换图，拖进来或者直接粘贴也行。匿名回答不显示关注按钮、签名和认证角标 —— 和知乎一致。</p>
+              <p className="helper">支持点击、拖拽或粘贴更换头像。匿名状态下自动隐藏关注按钮、签名与认证标。</p>
             ) : (
               <>
                 <TextField label="签名" value={data.author.headline} onChange={(v) => patch('author', { headline: v })} />
