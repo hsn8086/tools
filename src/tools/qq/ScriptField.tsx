@@ -107,8 +107,10 @@ export function ScriptField({
 }) {
   const inner = useRef<HTMLTextAreaElement>(null);
   const wrap = useRef<HTMLDivElement>(null);
-  const [menu, setMenu] = useState<{ start: number; hits: Hit[]; x: number; y: number } | null>(null);
+  const [menu, setMenu] = useState<{ start: number; hits: Hit[]; x: number; y: number; query: string } | null>(null);
   const [active, setActive] = useState(0);
+  /** 上一次的查询词。查询词没变就别动选中项，不然方向键刚挪一格就被重置回 0 */
+  const lastQuery = useRef<string | null>(null);
 
   const setRefs = useCallback(
     (el: HTMLTextAreaElement | null) => {
@@ -133,11 +135,18 @@ export function ScriptField({
     // 前一个字符是英数或 /:._- 就不弹：挡掉 https://、路径和邮箱。
     // 中文后面直接跟 / 是常态（「好耶/庆祝」），所以只挡这些。
     if (/[A-Za-z0-9/:._-]/.test(line[start - 1] ?? '')) return setMenu(null);
+    const query = m[1] + m[2];
     const hits = m[1] === '@' ? nameHits(m[2], names) : faceHits(m[2]);
-    if (!hits.length) return setMenu(null);
+    if (!hits.length) {
+      lastQuery.current = null;
+      return setMenu(null);
+    }
     const { x, y } = caretXY(ta, start);
-    setActive(0);
-    setMenu({ start, hits, x, y: y + parseFloat(getComputedStyle(ta).lineHeight || '20') });
+    if (lastQuery.current !== query) {
+      lastQuery.current = query;
+      setActive(0);
+    }
+    setMenu({ start, hits, x, y: y + parseFloat(getComputedStyle(ta).lineHeight || '20'), query });
   }, [names]);
 
   useLayoutEffect(() => {
@@ -156,7 +165,10 @@ export function ScriptField({
   }, [select?.seq]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    const close = () => setMenu(null);
+    const close = () => {
+      lastQuery.current = null;
+      setMenu(null);
+    };
     document.addEventListener('pointerdown', close);
     return () => document.removeEventListener('pointerdown', close);
   }, []);
@@ -204,7 +216,12 @@ export function ScriptField({
             setMenu(null);
           }
         }}
-        onKeyUp={refresh}
+        onKeyUp={(e) => {
+          // 方向键和回车已经在 keydown 里处理过了，
+          // 这里再刷一次只会把选中项打回原形
+          if (['ArrowDown', 'ArrowUp', 'Enter', 'Tab', 'Escape'].includes(e.key)) return;
+          refresh();
+        }}
         onClick={refresh}
         onBlur={() =>
           // 延时是给菜单项的点击留时间；到点再确认一次焦点确实走了，
