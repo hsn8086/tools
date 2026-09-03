@@ -14,6 +14,7 @@ import { pick, randClock, randInt } from '../../ui/random';
 import { ExportSheet } from '../../export/ExportSheet';
 import { ScriptField } from './ScriptField';
 import { FacePanel } from './FacePanel';
+import { SyntaxSheet } from './SyntaxSheet';
 import { frameCount, frameToPng } from './gif';
 import { useSnackbar } from '../../ui/Snackbar';
 
@@ -60,6 +61,7 @@ export function QQEditor() {
   const [exporting, setExporting] = useState(false);
   const [select, setSelect] = useState<{ start: number; end: number; seq: number; open?: boolean }>();
   const [facePanel, setFacePanel] = useState(false);
+  const [syntax, setSyntax] = useState(false);
   const hostRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
@@ -221,21 +223,23 @@ export function QQEditor() {
                 ]}
               />
             </div>
+            {/* 顺序照着截图从上往下：状态栏、标题栏、输入栏，最后是正文里的那行提示 */}
             <div className="row">
+              <Switch checked={data.statusBar.show} onChange={(v) => patch('statusBar', { show: v })} label="状态栏" />
               <Switch checked={data.header.show} onChange={(v) => patch('header', { show: v })} label="标题栏" />
               <Switch checked={data.inputBar} onChange={(v) => setData((d) => ({ ...d, inputBar: v }))} label="输入栏" />
               <Switch
                 checked={data.showReactionNotice}
                 onChange={(v) => setData((d) => ({ ...d, showReactionNotice: v }))}
-                label="被回应提示"
+                label="「回应了你」提示行"
               />
-              <Switch checked={data.statusBar.show} onChange={(v) => patch('statusBar', { show: v })} label="手机状态栏" />
             </div>
             {data.header.show && (
               <div className="row">
                 <div className="grow">
                   <TextField
-                    label="群名（人数直接写进去）"
+                    label="群名"
+                    placeholder="摸鱼交流中心(48)"
                     value={data.header.title}
                     onChange={(v) => patch('header', { title: v })}
                   />
@@ -265,69 +269,69 @@ export function QQEditor() {
           <Section
             title="对话"
             actions={
-              <PickImage onPick={insertImage}>
-                <IconImage />
-                插图
-              </PickImage>
+              <Button size="sm" variant="text" onClick={() => setSyntax(true)}>
+                语法
+              </Button>
             }
           >
-            <p className="hint">
-              按「昵称：内容」一行一条输入。无昵称行自动并入上一条，单独一行的 <code>[21:18]</code> 为时间分隔线。
-              打 <code>/</code> 补 QQ 表情，打 <code>@</code> 补人名。<code>+/庆祝@[土豆]</code> 贴到上一条消息下面 ——
-              贴的是自己的消息时会自动补一行「回应了你的消息」。
-            </p>
-            <div className="row insert-row">
-              <span className="muted">插入</span>
-              <Button size="sm" variant="text" onClick={() => insertLine('[21:18]', '21:18')}>
-                时间
-              </Button>
-              <Button size="sm" variant="text" onClick={() => insertLine(`[撤回] ${lastSpeaker()}`, lastSpeaker())}>
-                撤回
-              </Button>
-              <Button
-                size="sm"
-                variant="text"
-                onClick={() => insertLine(`[系统] @[${lastSpeaker()}]👉戳了戳@[对方]的头`, '对方')}
-              >
-                戳一戳
-              </Button>
-              <span className="face-btn">
+            {/* 常驻只讲怎么写一条消息，其余六种写法收进「语法」 */}
+            <p className="hint">每行写「昵称：内容」，下一行不写昵称就接在上一条后面。</p>
+
+            {/* 分两组：左边加结构，右边加内容 */}
+            <div className="row toolbar">
+              <div className="tool-group">
+                <Button size="sm" variant="text" onClick={() => insertLine('[21:18]', '21:18')}>
+                  时间
+                </Button>
+                <Button size="sm" variant="text" onClick={() => insertLine(`[撤回] ${lastSpeaker()}`, lastSpeaker())}>
+                  撤回
+                </Button>
                 <Button
                   size="sm"
                   variant="text"
-                  onClick={() => {
-                    // 桌面端开面板，手机上就地弹补全：小屏幕上面板会把正在编辑的内容盖住
-                    if (matchMedia('(hover: hover) and (min-width: 900px)').matches) setFacePanel((v) => !v);
-                    else insertAtCaret('/');
-                  }}
+                  onClick={() => insertLine(`[系统] @[${lastSpeaker()}]👉戳了戳@[对方]的头`, '对方')}
                 >
-                  表情
+                  戳一戳
                 </Button>
-                {facePanel && (
-                  <FacePanel
-                    onClose={() => setFacePanel(false)}
-                    onPick={(name) => {
-                      insertAtCaret(`/${name}`);
-                      setFacePanel(false);
+              </div>
+
+              <div className="tool-group">
+                <span className="face-btn">
+                  <Button
+                    size="sm"
+                    variant="text"
+                    onClick={() => {
+                      // 桌面端开面板，手机上就地弹补全：小屏幕上面板会把正在编辑的内容盖住
+                      if (matchMedia('(hover: hover) and (min-width: 900px)').matches) setFacePanel((v) => !v);
+                      else insertAtCaret('/');
                     }}
-                  />
-                )}
-              </span>
-              <Button size="sm" variant="text" onClick={() => insertLine('+/庆祝@[对方]', '对方')}>
-                贴表情
-              </Button>
-              <Button
-                size="sm"
-                variant="text"
-                onClick={() => insertLine(`[系统] @[${lastSpeaker()}]回应了你的消息:🤗`, '🤗')}
-              >
-                回应
-              </Button>
+                  >
+                    表情
+                  </Button>
+                  {facePanel && (
+                    <FacePanel
+                      onClose={() => setFacePanel(false)}
+                      onPick={(name) => {
+                        insertAtCaret(`/${name}`);
+                        setFacePanel(false);
+                      }}
+                    />
+                  )}
+                </span>
+                {/* QQ 自己管这个叫表态，跟「表情」区分得开 */}
+                <Button size="sm" variant="text" onClick={() => insertLine('+/庆祝@[对方]', '对方')}>
+                  表态
+                </Button>
+                <PickImage onPick={insertImage} variant="text">
+                  图片
+                </PickImage>
+              </div>
             </div>
             <ScriptField
               ref={scriptRef}
               label="聊天记录"
               rows={14}
+              placeholder={'土豆：今晚吃什么\n[18:30]\n小鹿：随便\n+/点赞@[土豆]'}
               value={data.script}
               names={people.map((p) => p.name)}
               select={select}
@@ -337,7 +341,7 @@ export function QQEditor() {
 
           <Section title="成员">
             {people.length === 0 ? (
-              <p className="hint">上面写了「昵称：内容」之后，这里会列出所有人。</p>
+              <p className="hint">上面写完对话，这里会列出所有人。</p>
             ) : (
               <div className="people">
                 {people.map((p) => (
@@ -382,7 +386,7 @@ export function QQEditor() {
                       {im.frames && im.frames > 1 ? (
                         <div className="frame-pick">
                           <span className="muted">
-                            第 {(im.frame ?? 0) + 1}/{im.frames} 帧
+                            第 {(im.frame ?? 0) + 1} 帧 / 共 {im.frames}
                           </span>
                           <Slider
                             min={0}
@@ -390,7 +394,7 @@ export function QQEditor() {
                             step={1}
                             value={im.frame ?? 0}
                             onChange={(v) => void setFrame(im.src, im.id, v)}
-                            label="定格帧"
+                            label="GIF 定格在第几帧"
                           />
                         </div>
                       ) : null}
@@ -453,6 +457,8 @@ export function QQEditor() {
         watermark={data.watermark.show}
         onWatermarkChange={(v) => setData((d) => ({ ...d, watermark: { ...d.watermark, show: v } }))}
       />
+
+      <SyntaxSheet open={syntax} onClose={() => setSyntax(false)} />
     </>
   );
 }

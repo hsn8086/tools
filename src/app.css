@@ -1333,3 +1333,82 @@ select {
   text-align: center;
   flex: none;
 }
+
+/* ---- 对话工具条：左边加结构，右边加内容 ---- */
+
+.toolbar {
+  gap: var(--sp-4);
+  margin-top: calc(var(--sp-2) * -1);
+}
+
+.tool-group {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  flex-wrap: wrap;
+}
+
+.tool-group + .tool-group {
+  position: relative;
+  padding-left: var(--sp-4);
+}
+
+/* 两组之间一根细线，比拉开间距更能说明「这是两类」。
+   窄屏两组会各占一行，这时候线就变成了行首一根没来由的竖杠，所以只在宽屏画 */
+@media (max-width: 719px) {
+  .tool-group + .tool-group {
+    padding-left: 0;
+  }
+
+  .tool-group + .tool-group::before {
+    display: none;
+  }
+}
+
+.tool-group + .tool-group::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 1px;
+  height: 18px;
+  transform: translateY(-50%);
+  background: var(--md-outline-variant);
+}
+
+/* ---- 语法说明 ---- */
+
+.syntax {
+  margin: 0;
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.syntax > div {
+  display: grid;
+  gap: 4px;
+}
+
+.syntax dt {
+  min-width: 0;
+}
+
+.syntax dt code {
+  display: inline-block;
+  max-width: 100%;
+  padding: 3px 8px;
+  border-radius: var(--shape-sm);
+  background: var(--md-surface-container-highest);
+  color: var(--md-on-surface);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.syntax dd {
+  margin: 0;
+  color: var(--md-on-surface-variant);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+/* 不分两栏：sheet 本身就窄，分栏只会把代码挤到换行 */

@@ -87,6 +87,7 @@ export function ScriptField({
   value,
   onChange,
   rows,
+  placeholder,
   names,
   select,
   ref,
@@ -95,6 +96,7 @@ export function ScriptField({
   value: string;
   onChange: (v: string) => void;
   rows?: number;
+  placeholder?: string;
   /** 补全用的人名字典 */
   names: string[];
   /**
@@ -197,6 +199,7 @@ export function ScriptField({
         label={label}
         multiline
         rows={rows}
+        placeholder={placeholder}
         value={value}
         ref={setRefs}
         onChange={onChange}

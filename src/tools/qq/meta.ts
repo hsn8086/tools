@@ -5,6 +5,6 @@ export const meta: ToolMeta = {
   id: 'qq',
   name: 'QQ 聊天记录生成器',
   emoji: '💬',
-  desc: '按文本剧本排版，渲染 iOS QQ 聊天截图',
+  desc: '写成剧本，生成 iOS QQ 聊天截图',
   Component: lazy(() => import('./Editor').then((m) => ({ default: m.QQEditor }))),
 };
