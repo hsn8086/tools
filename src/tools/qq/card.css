@@ -397,3 +397,24 @@
   color: var(--mark);
   pointer-events: none;
 }
+
+/* 正文里的小黄脸，跟字号绑在一起 */
+.qface {
+  width: 20px;
+  height: 20px;
+  vertical-align: -4px;
+  display: inline-block;
+}
+
+.sysline .qface,
+.notice-emoji .qface {
+  width: 17px;
+  height: 17px;
+  vertical-align: -4px;
+}
+
+.react-emoji .qface {
+  width: 17px;
+  height: 17px;
+  vertical-align: -3px;
+}

@@ -15,6 +15,8 @@ export interface QQPerson extends PersonAttrs {
 export interface Reaction {
   emoji: string;
   count: number;
+  /** 谁贴的。写了名字才能生成「XXX回应了你的消息」 */
+  who: string[];
 }
 
 export type QQItem =
@@ -34,7 +36,14 @@ export interface QQData {
    * 打字打到一半的半截名字不会堆成一堆人，改个错字也不至于把头像弄丢。
    */
   roster: Record<string, PersonAttrs>;
-  images: { id: string; src: string }[];
+  images: {
+    id: string;
+    src: string;
+    /** GIF 才有：总帧数、选中的帧，以及定格出来的那张 PNG */
+    frames?: number;
+    frame?: number;
+    still?: string;
+  }[];
 
   header: {
     show: boolean;
@@ -46,6 +55,13 @@ export interface QQData {
 
   /** 底部输入栏，真实截图里一般都带着 */
   inputBar: boolean;
+
+  /**
+   * 自动补「XXX回应了你的消息」。
+   * QQ 只有在被贴的是你自己的消息时才推这行，所以它跟着
+   * 贴表情走，不用单独再写一遍。
+   */
+  showReactionNotice: boolean;
 
   statusBar: {
     show: boolean;

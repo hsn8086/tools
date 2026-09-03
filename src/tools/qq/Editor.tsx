@@ -6,12 +6,14 @@ import { IMG_MARK, peopleInScript } from './script';
 import type { PersonAttrs, QQData } from './types';
 import { usePreviewLayout } from '../../ui/usePreviewLayout';
 import { ShadowScope } from '../../ui/ShadowScope';
-import { Button, IconButton, Segmented, Switch, TextField } from '../../ui/controls';
+import { Button, IconButton, Segmented, Slider, Switch, TextField } from '../../ui/controls';
 import { IconDelete, IconDice, IconExport, IconImage, IconPerson } from '../../ui/icons';
 import { AvatarPicker } from '../../ui/AvatarPicker';
 import { readImageFile } from '../../ui/file';
 import { pick, randClock, randInt } from '../../ui/random';
 import { ExportSheet } from '../../export/ExportSheet';
+import { ScriptField } from './ScriptField';
+import { frameCount, frameToPng } from './gif';
 import { useSnackbar } from '../../ui/Snackbar';
 
 const STORE_KEY = 'tools.qq.v1';
@@ -55,6 +57,7 @@ export function QQEditor() {
   const [data, setData] = useState<QQData>(load);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [exporting, setExporting] = useState(false);
+  const [select, setSelect] = useState<{ start: number; end: number; seq: number; open?: boolean }>();
   const hostRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
@@ -94,21 +97,29 @@ export function QQEditor() {
    */
   const insertLine = useCallback((line: string, selectHint?: string) => {
     const ta = scriptRef.current;
-    setData((d) => {
-      const at = ta ? ta.selectionStart : d.script.length;
-      const before = d.script.slice(0, at);
-      const after = d.script.slice(at);
-      const nl = before && !before.endsWith('\n') ? '\n' : '';
-      const text = before + nl + line + '\n' + after;
-      if (ta && selectHint) {
-        const pos = (before + nl).length + line.indexOf(selectHint);
-        requestAnimationFrame(() => {
-          ta.focus();
-          ta.setSelectionRange(pos, pos + selectHint.length);
-        });
-      }
-      return { ...d, script: text };
-    });
+    // 当前文本从 textarea 拿，不从 state：这两个 setState 必须都在
+    // 事件里平铺着写，塞进 updater 里的那个会被 React 当成
+    // 渲染期更新丢掉
+    const cur = ta?.value ?? '';
+    const at = ta ? ta.selectionStart : cur.length;
+    const before = cur.slice(0, at);
+    const nl = before && !before.endsWith('\n') ? '\n' : '';
+    const pos =
+      selectHint && line.includes(selectHint)
+        ? (before + nl).length + line.indexOf(selectHint)
+        : (before + nl + line).length;
+    setData((d) => ({ ...d, script: before + nl + line + '\n' + cur.slice(at) }));
+    setSelect((s) => ({ start: pos, end: pos + (selectHint ? selectHint.length : 0), seq: (s?.seq ?? 0) + 1 }));
+  }, []);
+
+  /** 光标处插一小段（不换行），插完把补全菜单弹出来 */
+  const insertAtCaret = useCallback((text: string) => {
+    const ta = scriptRef.current;
+    const cur = ta?.value ?? '';
+    const at = ta ? ta.selectionStart : cur.length;
+    const pos = at + text.length;
+    setData((d) => ({ ...d, script: cur.slice(0, at) + text + cur.slice(at) }));
+    setSelect((s) => ({ start: pos, end: pos, seq: (s?.seq ?? 0) + 1, open: true }));
   }, []);
 
   const lastSpeaker = useCallback(() => {
@@ -135,7 +146,32 @@ export function QQEditor() {
       return { ...d, images: [...d.images, { id, src }], script: before + nl + line + after };
     });
     snack('图片已插到光标处');
+
+    // GIF 单独跑一趟解码，拿到帧数就默认定格在第一帧
+    if (/^data:image\/gif/.test(src)) {
+      const n = await frameCount(src);
+      if (n > 1) {
+        const still = await frameToPng(src, 0);
+        setData((d) => ({
+          ...d,
+          images: d.images.map((im) => (im.id === id ? { ...im, frames: n, frame: 0, still: still ?? undefined } : im)),
+        }));
+        snack(`GIF 共 ${n} 帧，已定格在第 1 帧`);
+      }
+    }
   }, [snack]);
+
+  /** 换定格帧 */
+  const setFrame = useCallback(
+    async (src: string, id: string, frame: number) => {
+      const still = await frameToPng(src, frame);
+      setData((d) => ({
+        ...d,
+        images: d.images.map((x) => (x.id === id ? { ...x, frame, still: still ?? x.still } : x)),
+      }));
+    },
+    []
+  );
 
   const reset = useCallback(() => {
     if (!confirm('清空当前内容，恢复默认示例？')) return;
@@ -186,6 +222,11 @@ export function QQEditor() {
             <div className="row">
               <Switch checked={data.header.show} onChange={(v) => patch('header', { show: v })} label="标题栏" />
               <Switch checked={data.inputBar} onChange={(v) => setData((d) => ({ ...d, inputBar: v }))} label="输入栏" />
+              <Switch
+                checked={data.showReactionNotice}
+                onChange={(v) => setData((d) => ({ ...d, showReactionNotice: v }))}
+                label="被回应提示"
+              />
               <Switch checked={data.statusBar.show} onChange={(v) => patch('statusBar', { show: v })} label="手机状态栏" />
             </div>
             {data.header.show && (
@@ -230,7 +271,8 @@ export function QQEditor() {
           >
             <p className="hint">
               按「昵称：内容」一行一条输入。无昵称行自动并入上一条，单独一行的 <code>[21:18]</code> 为时间分隔线。
-              <code>+🐔2</code> 贴到上一条消息下面，<code>[系统]</code> 行里的 <code>@[名字]</code> 会变蓝。
+              打 <code>/</code> 补 QQ 表情，打 <code>@</code> 补人名。<code>+/庆祝@[土豆]</code> 贴到上一条消息下面 ——
+              贴的是自己的消息时会自动补一行「回应了你的消息」。
             </p>
             <div className="row insert-row">
               <span className="muted">插入</span>
@@ -247,7 +289,10 @@ export function QQEditor() {
               >
                 戳一戳
               </Button>
-              <Button size="sm" variant="text" onClick={() => insertLine('+🐔2 ❤️1', '🐔')}>
+              <Button size="sm" variant="text" onClick={() => insertAtCaret('/')}>
+                表情
+              </Button>
+              <Button size="sm" variant="text" onClick={() => insertLine('+/庆祝@[对方]', '对方')}>
                 贴表情
               </Button>
               <Button
@@ -258,12 +303,13 @@ export function QQEditor() {
                 回应
               </Button>
             </div>
-            <TextField
+            <ScriptField
               ref={scriptRef}
               label="聊天记录"
-              multiline
               rows={14}
               value={data.script}
+              names={people.map((p) => p.name)}
+              select={select}
               onChange={(v) => setData((d) => ({ ...d, script: v }))}
             />
           </Section>
@@ -310,8 +356,23 @@ export function QQEditor() {
                   const used = data.script.includes(IMG_MARK(im.id));
                   return (
                     <div className="img-item" key={im.id} data-orphan={!used || undefined}>
-                      <img src={im.src} alt="" />
+                      <img src={im.still ?? im.src} alt="" />
                       <span className="muted grow">{used ? IMG_MARK(im.id) : '未使用'}</span>
+                      {im.frames && im.frames > 1 ? (
+                        <div className="frame-pick">
+                          <span className="muted">
+                            第 {(im.frame ?? 0) + 1}/{im.frames} 帧
+                          </span>
+                          <Slider
+                            min={0}
+                            max={im.frames - 1}
+                            step={1}
+                            value={im.frame ?? 0}
+                            onChange={(v) => void setFrame(im.src, im.id, v)}
+                            label="定格帧"
+                          />
+                        </div>
+                      ) : null}
                       <IconButton
                         label="删除"
                         onClick={() =>

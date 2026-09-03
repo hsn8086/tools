@@ -1,4 +1,11 @@
-import { useId, type ReactNode, type Ref } from 'react';
+import {
+  useId,
+  type FocusEventHandler,
+  type KeyboardEventHandler,
+  type MouseEventHandler,
+  type ReactNode,
+  type Ref,
+} from 'react';
 
 export function Button({
   variant = 'tonal',
@@ -120,6 +127,10 @@ export function TextField({
   multiline,
   rows,
   ref,
+  onKeyDown,
+  onKeyUp,
+  onClick,
+  onBlur,
 }: {
   label: string;
   value: string;
@@ -129,6 +140,10 @@ export function TextField({
   multiline?: boolean;
   rows?: number;
   ref?: Ref<HTMLTextAreaElement>;
+  onKeyDown?: KeyboardEventHandler<HTMLTextAreaElement>;
+  onKeyUp?: KeyboardEventHandler<HTMLTextAreaElement>;
+  onClick?: MouseEventHandler<HTMLTextAreaElement>;
+  onBlur?: FocusEventHandler<HTMLTextAreaElement>;
 }) {
   const id = useId();
   const floated = value.length > 0 || !!placeholder;
@@ -143,6 +158,10 @@ export function TextField({
           value={value}
           placeholder={placeholder}
           onChange={(e) => onChange(e.target.value)}
+          onKeyDown={onKeyDown}
+          onKeyUp={onKeyUp}
+          onClick={onClick}
+          onBlur={onBlur}
         />
       ) : (
         <input

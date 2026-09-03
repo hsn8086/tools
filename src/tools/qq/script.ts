@@ -12,15 +12,24 @@ const SYS_LINE = /^\s*[[【]\s*系统\s*[\]】]\s*(.+)$/;
  */
 const REACT_LINE = /^\s*\+\s*(\S[^\n]*)$/;
 
-/** 把 `+🐔2 ❤️2` 拆成表情和计数，看不出计数就算 1 */
+/**
+ * 把 `+/庆祝2 ❤️@土豆@小鹿` 拆成表情、计数和贴的人。
+ * 写了人名就以人数为准 —— 计数和名单对不上是最容易出的错，
+ * 干脆让名单说了算。
+ */
 function parseReactions(rest: string): Reaction[] | null {
   const out: Reaction[] = [];
   for (const tok of rest.split(/\s+/)) {
-    const m = /^(\D+?)\s*(\d*)$/.exec(tok);
+    const who: string[] = [];
+    const body = tok.replace(/@\[([^\]]+)\]|@([^\s@]{1,24})/g, (_, a, b) => {
+      who.push((a ?? b).trim());
+      return '';
+    });
+    const m = /^(\D+?)\s*(\d*)$/.exec(body);
     if (!m) return null;
     // 纯 ASCII 的不算表情，挡掉「+1」这种正文
     if (!/[^\u0000-\u007f]/.test(m[1])) return null;
-    out.push({ emoji: m[1], count: m[2] ? Number(m[2]) : 1 });
+    out.push({ emoji: m[1], count: who.length || (m[2] ? Number(m[2]) : 1), who });
   }
   return out.length ? out : null;
 }

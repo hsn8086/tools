@@ -1,23 +1,41 @@
-import { type ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import type { QQData } from './types';
 import { DEFAULT_AVATAR } from './defaults';
 import { attrsOf, parseScript } from './script';
+import { QFACE_RE, qfaceByName, qfaceUrl } from './qface';
 import { StatusBar } from '../../ui/StatusBar';
 
-/** 行内语法：@某人 和 http 链接自动上色，和 QQ 一致 */
+/** `/微笑` 换成小黄脸图片。只认字典里有的名字，所以「他/她」「和/或」不会误伤 */
+function withFaces(text: string, keyBase: string): ReactNode[] {
+  const out: ReactNode[] = [];
+  let last = 0;
+  let m: RegExpExecArray | null;
+  QFACE_RE.lastIndex = 0;
+  while ((m = QFACE_RE.exec(text))) {
+    if (m.index > last) out.push(text.slice(last, m.index));
+    const f = qfaceByName(m[1]);
+    out.push(<img className="qface" key={`${keyBase}f${m.index}`} src={qfaceUrl(f!.file)} alt={m[1]} />);
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
+}
+
+/** 行内语法：@某人 和 http 链接自动上色，和 QQ 一致。@[带空格的名字] 也认 */
 function inline(text: string): ReactNode {
-  const re = /(@[^\s@]{1,20})|(https?:\/\/\S+)/g;
+  const re = /@\[([^\]]+)\]|(@[^\s@]{1,20})|(https?:\/\/\S+)/g;
   const out: ReactNode[] = [];
   let last = 0;
   let m: RegExpExecArray | null;
   let k = 0;
   while ((m = re.exec(text))) {
-    if (m.index > last) out.push(text.slice(last, m.index));
-    if (m[1]) out.push(<span className="at" key={k++}>{m[1]}</span>);
-    else out.push(<a className="lnk" key={k++}>{m[2]}</a>);
+    if (m.index > last) out.push(...withFaces(text.slice(last, m.index), `${k}`));
+    if (m[1] !== undefined) out.push(<span className="at" key={k++}>@{m[1]}</span>);
+    else if (m[2]) out.push(<span className="at" key={k++}>{m[2]}</span>);
+    else out.push(<a className="lnk" key={k++}>{m[3]}</a>);
     last = m.index + m[0].length;
   }
-  if (last < text.length) out.push(text.slice(last));
+  if (last < text.length) out.push(...withFaces(text.slice(last), 'tail'));
   return out;
 }
 
@@ -32,7 +50,7 @@ function sysInline(text: string): ReactNode {
   let m: RegExpExecArray | null;
   let k = 0;
   while ((m = re.exec(text))) {
-    if (m.index > last) out.push(text.slice(last, m.index));
+    if (m.index > last) out.push(...withFaces(text.slice(last, m.index), `s${k}`));
     out.push(
       <span className="sys-who" key={k++}>
         {m[1] ?? m[2]}
@@ -40,7 +58,7 @@ function sysInline(text: string): ReactNode {
     );
     last = m.index + m[0].length;
   }
-  if (last < text.length) out.push(text.slice(last));
+  if (last < text.length) out.push(...withFaces(text.slice(last), 'stail'));
   return out;
 }
 
@@ -98,7 +116,12 @@ const InputBar = () => (
 export function QQCard({ data, theme }: { data: QQData; theme: 'light' | 'dark' }) {
   const items = parseScript(data.script);
   const person = (name: string) => attrsOf(data, name, DEFAULT_AVATAR);
-  const image = (id?: string) => (id ? data.images.find((i) => i.id === id)?.src : undefined);
+  // GIF 用定格帧渲染：不然导出抓到第几帧全看运气
+  const image = (id?: string) => {
+    if (!id) return undefined;
+    const im = data.images.find((i) => i.id === id);
+    return im?.still ?? im?.src;
+  };
   const sb = data.statusBar;
 
   return (
@@ -136,8 +159,14 @@ export function QQCard({ data, theme }: { data: QQData; theme: 'light' | 'dark' 
 
           const p = person(it.name);
           const src = image(it.imageId);
+          // QQ 只在「你自己的消息」被贴时推这行，所以它跟着 self 走
+          const notices =
+            data.showReactionNotice && p.self
+              ? (it.reactions ?? []).flatMap((r) => r.who.map((w) => ({ who: w, emoji: r.emoji })))
+              : [];
           return (
-            <div className="msg" data-self={p?.self ? 'true' : undefined} key={it.id}>
+            <Fragment key={it.id}>
+            <div className="msg" data-self={p?.self ? 'true' : undefined}>
               <img className="avatar" src={p?.avatar} alt="" crossOrigin="anonymous" />
               <div className="col">
                 {it.name && (
@@ -159,7 +188,7 @@ export function QQCard({ data, theme }: { data: QQData; theme: 'light' | 'dark' 
                   <div className="reacts">
                     {it.reactions.map((r, i) => (
                       <span className="react" key={i}>
-                        <span className="react-emoji">{r.emoji}</span>
+                        <span className="react-emoji">{withFaces(r.emoji, `r${i}`)}</span>
                         {r.count}
                       </span>
                     ))}
@@ -170,6 +199,14 @@ export function QQCard({ data, theme }: { data: QQData; theme: 'light' | 'dark' 
                 ) : null}
               </div>
             </div>
+            {notices.map((n, i) => (
+              <div className="sysline" key={`n${i}`}>
+                <span className="sys-who">{n.who}</span>
+                回应了你的消息:
+                <span className="notice-emoji">{withFaces(n.emoji, `ne${i}`)}</span>
+              </div>
+            ))}
+            </Fragment>
           );
         })}
       </div>

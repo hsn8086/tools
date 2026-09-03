@@ -1171,3 +1171,78 @@ select {
 .insert-row .muted {
   margin-right: var(--sp-1);
 }
+
+/* ---- 剧本补全：@ 补人名，/ 补 QQ 表情 ---- */
+
+.script-field {
+  position: relative;
+}
+
+.ac {
+  position: absolute;
+  z-index: 20;
+  margin: 0;
+  padding: var(--sp-1);
+  list-style: none;
+  max-height: 240px;
+  overflow-y: auto;
+  min-width: 132px;
+  max-width: 260px;
+  background: var(--md-surface-container-high);
+  border-radius: var(--shape-md);
+  box-shadow: var(--elev-2);
+}
+
+.ac li {
+  margin: 0;
+}
+
+.ac button {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  padding: 6px 10px;
+  border: none;
+  border-radius: var(--shape-sm);
+  background: none;
+  color: var(--md-on-surface);
+  font: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ac button[data-active] {
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+}
+
+.ac img {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+
+/* GIF 定格帧 */
+.frame-pick {
+  flex-basis: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+}
+
+.frame-pick .muted {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.frame-pick > *:last-child {
+  flex: 1;
+}
+
+.img-item {
+  flex-wrap: wrap;
+}
