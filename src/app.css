@@ -1246,3 +1246,90 @@ select {
 .img-item {
   flex-wrap: wrap;
 }
+
+/* ---- 桌面端表情面板 ---- */
+
+.face-btn {
+  position: relative;
+  display: inline-flex;
+}
+
+.face-panel {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + var(--sp-2));
+  left: 0;
+  width: 344px;
+  padding: var(--sp-3);
+  background: var(--md-surface-container-high);
+  border-radius: var(--shape-lg);
+  box-shadow: var(--elev-3);
+}
+
+.face-search {
+  width: 100%;
+  height: 36px;
+  padding: 0 12px;
+  margin-bottom: var(--sp-2);
+  border: none;
+  border-radius: var(--shape-full);
+  background: var(--md-surface-container-highest);
+  color: var(--md-on-surface);
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.face-search::placeholder {
+  color: var(--md-on-surface-variant);
+}
+
+.face-search:focus-visible {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 1px;
+}
+
+.face-panel .face-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+  max-height: 268px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.face-panel .face-grid button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  padding: 4px;
+  border: none;
+  border-radius: var(--shape-sm);
+  background: none;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  transition:
+    background var(--dur-press) ease,
+    transform var(--dur-press) var(--ease-out);
+}
+
+.face-panel .face-grid button:hover {
+  background: var(--md-surface-container-highest);
+}
+
+.face-panel .face-grid button:active {
+  transform: scale(0.86);
+}
+
+.face-panel .face-grid img {
+  width: 26px;
+  height: 26px;
+  display: block;
+}
+
+.ac-char {
+  width: 22px;
+  text-align: center;
+  flex: none;
+}

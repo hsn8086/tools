@@ -14,6 +14,7 @@ interface Hit {
   insert: string;
   label: string;
   icon?: string;
+  char?: string;
 }
 
 const MAX = 30;
@@ -41,7 +42,7 @@ function faceHits(query: string): Hit[] {
     .filter(([, s]) => s >= 0)
     .sort((a, b) => a[1] - b[1])
     .slice(0, MAX)
-    .map(([f]) => ({ insert: `/${f.name}`, label: f.name, icon: qfaceUrl(f.file) }));
+    .map(([f]) => ({ insert: `/${f.name}`, label: f.name, icon: f.file ? qfaceUrl(f.file) : undefined, char: f.char }));
 }
 
 /**
@@ -250,7 +251,7 @@ export function ScriptField({
                 }}
                 onMouseEnter={() => setActive(i)}
               >
-                {h.icon ? <img src={h.icon} alt="" /> : null}
+                {h.icon ? <img src={h.icon} alt="" /> : h.char ? <span className="ac-char">{h.char}</span> : null}
                 {h.label}
               </button>
             </li>

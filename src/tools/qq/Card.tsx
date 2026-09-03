@@ -13,8 +13,16 @@ function withFaces(text: string, keyBase: string): ReactNode[] {
   QFACE_RE.lastIndex = 0;
   while ((m = QFACE_RE.exec(text))) {
     if (m.index > last) out.push(text.slice(last, m.index));
-    const f = qfaceByName(m[1]);
-    out.push(<img className="qface" key={`${keyBase}f${m.index}`} src={qfaceUrl(f!.file)} alt={m[1]} />);
+    const f = qfaceByName(m[1])!;
+    out.push(
+      f.file ? (
+        <img className="qface" key={`${keyBase}f${m.index}`} src={qfaceUrl(f.file)} alt={m[1]} />
+      ) : (
+        <span className="qchar" key={`${keyBase}f${m.index}`}>
+          {f.char}
+        </span>
+      )
+    );
     last = m.index + m[0].length;
   }
   if (last < text.length) out.push(text.slice(last));

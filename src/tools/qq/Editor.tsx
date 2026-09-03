@@ -13,6 +13,7 @@ import { readImageFile } from '../../ui/file';
 import { pick, randClock, randInt } from '../../ui/random';
 import { ExportSheet } from '../../export/ExportSheet';
 import { ScriptField } from './ScriptField';
+import { FacePanel } from './FacePanel';
 import { frameCount, frameToPng } from './gif';
 import { useSnackbar } from '../../ui/Snackbar';
 
@@ -58,6 +59,7 @@ export function QQEditor() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [exporting, setExporting] = useState(false);
   const [select, setSelect] = useState<{ start: number; end: number; seq: number; open?: boolean }>();
+  const [facePanel, setFacePanel] = useState(false);
   const hostRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
@@ -289,9 +291,28 @@ export function QQEditor() {
               >
                 戳一戳
               </Button>
-              <Button size="sm" variant="text" onClick={() => insertAtCaret('/')}>
-                表情
-              </Button>
+              <span className="face-btn">
+                <Button
+                  size="sm"
+                  variant="text"
+                  onClick={() => {
+                    // 桌面端开面板，手机上就地弹补全：小屏幕上面板会把正在编辑的内容盖住
+                    if (matchMedia('(hover: hover) and (min-width: 900px)').matches) setFacePanel((v) => !v);
+                    else insertAtCaret('/');
+                  }}
+                >
+                  表情
+                </Button>
+                {facePanel && (
+                  <FacePanel
+                    onClose={() => setFacePanel(false)}
+                    onPick={(name) => {
+                      insertAtCaret(`/${name}`);
+                      setFacePanel(false);
+                    }}
+                  />
+                )}
+              </span>
               <Button size="sm" variant="text" onClick={() => insertLine('+/庆祝@[对方]', '对方')}>
                 贴表情
               </Button>
