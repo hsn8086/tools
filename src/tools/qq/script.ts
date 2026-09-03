@@ -1,9 +1,29 @@
-import type { PersonAttrs, QQData, QQItem, QQPerson } from './types';
+import type { PersonAttrs, QQData, QQItem, QQPerson, Reaction } from './types';
 
 export const IMG_MARK = (id: string) => `![${id}]`;
 
 const NAME_LINE = /^\s*([^：:]{1,20})\s*[：:]\s*([\s\S]*)$/;
 const TIME_LINE = /^\s*[[【]\s*([^\]】]{1,20})\s*[\]】]\s*$/;
+const RECALL_LINE = /^\s*[[【]\s*撤回\s*[\]】]\s*(.*)$/;
+const SYS_LINE = /^\s*[[【]\s*系统\s*[\]】]\s*(.+)$/;
+/**
+ * 贴表情行：`+🐔2 ❤️2`，贴到上一条消息下面。
+ * 要求至少有一个非 ASCII 字符，不然「+1，密室好」这种正文会被吃掉。
+ */
+const REACT_LINE = /^\s*\+\s*(\S[^\n]*)$/;
+
+/** 把 `+🐔2 ❤️2` 拆成表情和计数，看不出计数就算 1 */
+function parseReactions(rest: string): Reaction[] | null {
+  const out: Reaction[] = [];
+  for (const tok of rest.split(/\s+/)) {
+    const m = /^(\D+?)\s*(\d*)$/.exec(tok);
+    if (!m) return null;
+    // 纯 ASCII 的不算表情，挡掉「+1」这种正文
+    if (!/[^\u0000-\u007f]/.test(m[1])) return null;
+    out.push({ emoji: m[1], count: m[2] ? Number(m[2]) : 1 });
+  }
+  return out.length ? out : null;
+}
 
 /**
  * 剧本语法，一行一条：
@@ -11,6 +31,9 @@ const TIME_LINE = /^\s*[[【]\s*([^\]】]{1,20})\s*[\]】]\s*$/;
  *   [21:18]              ← 单独一行的方括号 = 时间分割线
  *   茯茶：今天只做了一题   ← 没有冒号的行接到上一条后面（多行消息）
  *   ![img_x]             ← 图片占位，由「插图」按钮写入
+ *   [撤回] 昵称           ← 「昵称撤回了一条消息」
+ *   [系统] @甲 戳了戳@乙   ← 灰色居中行，@名字 变蓝
+ *   +🐔2 ❤️2             ← 贴到上一条消息下面的表情回应
  *
  * 之所以不做成一条条卡片：聊天记录是顺序性极强的东西，
  * 打字比拖控件快得多，而且换人只是改一个名字。
@@ -26,6 +49,29 @@ export function parseScript(script: string): QQItem[] {
     if (!line.trim()) {
       last = null; // 空行断开续行
       continue;
+    }
+
+    const rc = RECALL_LINE.exec(line);
+    if (rc) {
+      items.push({ kind: 'recall', id: id(), name: rc[1].trim() });
+      last = null;
+      continue;
+    }
+
+    const sy = SYS_LINE.exec(line);
+    if (sy) {
+      items.push({ kind: 'sys', id: id(), text: sy[1].trim() });
+      last = null;
+      continue;
+    }
+
+    const rx = REACT_LINE.exec(line);
+    if (rx && last) {
+      const reactions = parseReactions(rx[1]);
+      if (reactions) {
+        last.reactions = [...(last.reactions ?? []), ...reactions];
+        continue;
+      }
     }
 
     const t = TIME_LINE.exec(line);

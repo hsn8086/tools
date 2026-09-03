@@ -87,6 +87,37 @@ export function QQEditor() {
     });
   }, []);
 
+  /**
+   * 往光标处插一整行。
+   * 这几种语法没人会去背，所以按钮塞模板，插完把光标停在
+   * 需要改的那段上（selection 交给下一帧，textarea 值还没更新）。
+   */
+  const insertLine = useCallback((line: string, selectHint?: string) => {
+    const ta = scriptRef.current;
+    setData((d) => {
+      const at = ta ? ta.selectionStart : d.script.length;
+      const before = d.script.slice(0, at);
+      const after = d.script.slice(at);
+      const nl = before && !before.endsWith('\n') ? '\n' : '';
+      const text = before + nl + line + '\n' + after;
+      if (ta && selectHint) {
+        const pos = (before + nl).length + line.indexOf(selectHint);
+        requestAnimationFrame(() => {
+          ta.focus();
+          ta.setSelectionRange(pos, pos + selectHint.length);
+        });
+      }
+      return { ...d, script: text };
+    });
+  }, []);
+
+  const lastSpeaker = useCallback(() => {
+    const re = /(?:^|\n)\s*([^：:\n[【]{1,20})\s*[：:]/g;
+    let name = '';
+    for (let m = re.exec(data.script); m; m = re.exec(data.script)) name = m[1].trim();
+    return name || '昵称';
+  }, [data.script]);
+
   const insertImage = useCallback(async (file: File) => {
     const src = await readImageFile(file);
     const id = `img${Date.now().toString(36)}${imgSeq++}`;
@@ -199,7 +230,34 @@ export function QQEditor() {
           >
             <p className="hint">
               按「昵称：内容」一行一条输入。无昵称行自动并入上一条，单独一行的 <code>[21:18]</code> 为时间分隔线。
+              <code>+🐔2</code> 贴到上一条消息下面，<code>[系统]</code> 行里的 <code>@[名字]</code> 会变蓝。
             </p>
+            <div className="row insert-row">
+              <span className="muted">插入</span>
+              <Button size="sm" variant="text" onClick={() => insertLine('[21:18]', '21:18')}>
+                时间
+              </Button>
+              <Button size="sm" variant="text" onClick={() => insertLine(`[撤回] ${lastSpeaker()}`, lastSpeaker())}>
+                撤回
+              </Button>
+              <Button
+                size="sm"
+                variant="text"
+                onClick={() => insertLine(`[系统] @[${lastSpeaker()}]👉戳了戳@[对方]的头`, '对方')}
+              >
+                戳一戳
+              </Button>
+              <Button size="sm" variant="text" onClick={() => insertLine('+🐔2 ❤️1', '🐔')}>
+                贴表情
+              </Button>
+              <Button
+                size="sm"
+                variant="text"
+                onClick={() => insertLine(`[系统] @[${lastSpeaker()}]回应了你的消息:🤗`, '🤗')}
+              >
+                回应
+              </Button>
+            </div>
             <TextField
               ref={scriptRef}
               label="聊天记录"

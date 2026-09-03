@@ -21,6 +21,37 @@ function inline(text: string): ReactNode {
   return out;
 }
 
+/**
+ * 系统行：@名字 变蓝并截断，其余是灰的。
+ * 名字里有空格（「雾月 | 可是小夕」这种）就写成 @[雾月 | 可是小夕]。
+ */
+function sysInline(text: string): ReactNode {
+  const re = /@\[([^\]]+)\]|@([^\s@]{1,24})/g;
+  const out: ReactNode[] = [];
+  let last = 0;
+  let m: RegExpExecArray | null;
+  let k = 0;
+  while ((m = re.exec(text))) {
+    if (m.index > last) out.push(text.slice(last, m.index));
+    out.push(
+      <span className="sys-who" key={k++}>
+        {m[1] ?? m[2]}
+      </span>
+    );
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
+}
+
+/** 撤回行末尾那颗灰色叉 */
+const RecallX = () => (
+  <svg className="recall-x" viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="12" r="11" fill="currentColor" />
+    <path d="M8.4 8.4 15.6 15.6M15.6 8.4 8.4 15.6" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" />
+  </svg>
+);
+
 const Back = () => (
   <svg className="back" viewBox="0 0 11 19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9.5 1.5 1.5 9.5l8 8" />
@@ -30,6 +61,17 @@ const Back = () => (
 const Menu = () => (
   <svg className="menu" viewBox="0 0 22 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
     <path d="M1 1h20M1 8h20M1 15h20" />
+  </svg>
+);
+
+/** 反应条末尾那颗「加表情」 */
+const AddReact = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+    <path d="M20.9 12.9a9 9 0 1 1-9.8-9.8" strokeLinecap="round" />
+    <path d="M8.4 14.2a4.6 4.6 0 0 0 6.9.6" strokeLinecap="round" />
+    <circle cx="8.9" cy="9.8" r="1.1" fill="currentColor" stroke="none" />
+    <circle cx="15.1" cy="9.8" r="1.1" fill="currentColor" stroke="none" />
+    <path d="M18.4 3.2v5M20.9 5.7h-5" strokeLinecap="round" />
   </svg>
 );
 
@@ -76,6 +118,22 @@ export function QQCard({ data, theme }: { data: QQData; theme: 'light' | 'dark' 
         {items.map((it) => {
           if (it.kind === 'time') return <div className="tsep" key={it.id}>{it.text}</div>;
 
+          if (it.kind === 'sys')
+            return (
+              <div className="sysline" key={it.id}>
+                {sysInline(it.text)}
+              </div>
+            );
+
+          if (it.kind === 'recall')
+            return (
+              <div className="sysline" key={it.id}>
+                <span className="sys-who">{it.name}</span>
+                撤回了一条消息
+                <RecallX />
+              </div>
+            );
+
           const p = person(it.name);
           const src = image(it.imageId);
           return (
@@ -97,6 +155,19 @@ export function QQCard({ data, theme }: { data: QQData; theme: 'light' | 'dark' 
                 ) : (
                   <div className="bubble">{inline(it.text)}</div>
                 )}
+                {it.reactions?.length ? (
+                  <div className="reacts">
+                    {it.reactions.map((r, i) => (
+                      <span className="react" key={i}>
+                        <span className="react-emoji">{r.emoji}</span>
+                        {r.count}
+                      </span>
+                    ))}
+                    <span className="react react-add">
+                      <AddReact />
+                    </span>
+                  </div>
+                ) : null}
               </div>
             </div>
           );

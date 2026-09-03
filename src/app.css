@@ -1161,3 +1161,13 @@ select {
 .person {
   flex-wrap: wrap;
 }
+
+/* 插入行：一排文字按钮，别喧宾夺主 */
+.insert-row {
+  gap: var(--sp-1);
+  margin-top: calc(var(--sp-2) * -1);
+}
+
+.insert-row .muted {
+  margin-right: var(--sp-1);
+}

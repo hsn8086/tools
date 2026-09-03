@@ -11,9 +11,19 @@ export interface QQPerson extends PersonAttrs {
   name: string;
 }
 
+/** 贴在某条消息下面的表情回应 */
+export interface Reaction {
+  emoji: string;
+  count: number;
+}
+
 export type QQItem =
   | { kind: 'time'; id: string; text: string }
-  | { kind: 'msg'; id: string; name: string; text: string; imageId?: string };
+  /** 灰色居中系统行：戳一戳、回应了你的消息，@名字 会变蓝 */
+  | { kind: 'sys'; id: string; text: string }
+  /** 「XXX撤回了一条消息 ⊗」 */
+  | { kind: 'recall'; id: string; name: string }
+  | { kind: 'msg'; id: string; name: string; text: string; imageId?: string; reactions?: Reaction[] };
 
 export interface QQData {
   /** 剧本原文，`昵称：内容` 一行一条，见 script.ts */

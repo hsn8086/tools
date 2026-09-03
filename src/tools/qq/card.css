@@ -14,7 +14,7 @@
 }
 
 .qq {
-  --bg: #f2f2f2;
+  --bg: #ecedf2;
   --bubble: #ffffff;
   --self: #0099ff;
   --self-text: #ffffff;
@@ -26,6 +26,12 @@
   --icon: #4a4a4e;
   --mark: rgba(0, 0, 0, 0.16);
   --status: #131314;
+  --sys: #8b8c91;
+  --sys-link: #355faa;
+  --sys-x: #b9babf;
+  --chip: #e3e4e9;
+  --chip-text: #7f8085;
+  --chip-icon: #9a9ba0;
 
   width: 414px;
   position: relative;
@@ -50,6 +56,12 @@
   --icon: #b6b6ba;
   --mark: rgba(255, 255, 255, 0.22);
   --status: #e6e6e8;
+  --sys: #7e8188;
+  --sys-link: #6f94d8;
+  --sys-x: #55565b;
+  --chip: #2c2c30;
+  --chip-text: #9a9ba0;
+  --chip-icon: #7e8188;
 }
 
 .qq * {
@@ -265,6 +277,10 @@
   margin: 0 2px 6px 0;
 }
 
+.msg[data-self='true'] .reacts {
+  justify-content: flex-end;
+}
+
 .msg[data-self='true'] .bubble {
   background: var(--self);
   color: var(--self-text);
@@ -273,6 +289,74 @@
 .msg[data-self='true'] .lnk,
 .msg[data-self='true'] .at {
   color: #dff0ff;
+}
+
+/* ---------- 系统行：撤回 / 戳一戳 / 回应 ---------- */
+/* 尺寸从 828×2496 @2x 反推：13px、行距 20、上下各 6，昵称截断在 100px */
+
+.sysline {
+  display: block;
+  text-align: center;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--sys);
+  margin: 6px 20px;
+}
+
+.sys-who {
+  display: inline-block;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+  color: var(--sys-link);
+}
+
+.recall-x {
+  width: 12px;
+  height: 12px;
+  margin-left: 4px;
+  vertical-align: -1px;
+  color: var(--sys-x);
+}
+
+/* ---------- 贴表情 ---------- */
+/* chip 46×24（单个计数），加号那颗 34×24，间隔 4，跟气泡同侧对齐 */
+
+.reacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 5px;
+}
+
+.react {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--chip);
+  color: var(--chip-text);
+  font-size: 13px;
+  line-height: 1;
+}
+
+.react-emoji {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.react-add {
+  padding: 0 8px;
+  color: var(--chip-icon);
+}
+
+.react-add svg {
+  width: 18px;
+  height: 18px;
 }
 
 /* ---------- 纯图片消息（不套气泡，QQ 就是这么画的） ---------- */
