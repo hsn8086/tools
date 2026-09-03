@@ -62,7 +62,9 @@ export function parseScript(script: string): QQItem[] {
 
     const rc = RECALL_LINE.exec(line);
     if (rc) {
-      items.push({ kind: 'recall', id: id(), name: rc[1].trim() });
+      // 补全插进来的可能是 @[名字]，剥掉外壳再存
+      const who = rc[1].trim().replace(/^@\[([^\]]+)\]$/, '$1').replace(/^@/, '');
+      items.push({ kind: 'recall', id: id(), name: who });
       last = null;
       continue;
     }

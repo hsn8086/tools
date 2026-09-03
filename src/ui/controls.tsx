@@ -1,5 +1,6 @@
 import {
   useId,
+  type CompositionEventHandler,
   type FocusEventHandler,
   type KeyboardEventHandler,
   type MouseEventHandler,
@@ -131,6 +132,8 @@ export function TextField({
   onKeyUp,
   onClick,
   onBlur,
+  onCompositionStart,
+  onCompositionEnd,
 }: {
   label: string;
   value: string;
@@ -144,6 +147,8 @@ export function TextField({
   onKeyUp?: KeyboardEventHandler<HTMLTextAreaElement>;
   onClick?: MouseEventHandler<HTMLTextAreaElement>;
   onBlur?: FocusEventHandler<HTMLTextAreaElement>;
+  onCompositionStart?: CompositionEventHandler<HTMLTextAreaElement>;
+  onCompositionEnd?: CompositionEventHandler<HTMLTextAreaElement>;
 }) {
   const id = useId();
   const floated = value.length > 0 || !!placeholder;
@@ -162,6 +167,8 @@ export function TextField({
           onKeyUp={onKeyUp}
           onClick={onClick}
           onBlur={onBlur}
+          onCompositionStart={onCompositionStart}
+          onCompositionEnd={onCompositionEnd}
         />
       ) : (
         <input

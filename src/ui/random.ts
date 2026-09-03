@@ -29,6 +29,27 @@ export const randSmallCount = () => fmt(Math.random() < 0.6 ? randInt(3, 999) : 
 /** 回答数。真问题很少上万，上万就不像了 */
 export const randAnswerCount = () => fmt(Math.random() < 0.5 ? randInt(20, 999) : randInt(1000, 9999));
 
+/**
+ * 未读数。原来是从八个固定值里挑，连点几下就开始重样，
+ * 看着一点也不随机。改成按真实分布抽：大多数群就几条未读，
+ * 上百的是少数，还有相当一部分根本没有未读。
+ * 再避开当前值，不然「点了没反应」和「抽到一样的」分不出来。
+ */
+export function randUnread(current = ''): string {
+  const roll = (): string => {
+    const r = Math.random();
+    if (r < 0.14) return '';
+    if (r < 0.72) return String(randInt(1, 20));
+    if (r < 0.93) return String(randInt(21, 99));
+    return '99+';
+  };
+  for (let i = 0; i < 5; i++) {
+    const v = roll();
+    if (v !== current) return v;
+  }
+  return roll();
+}
+
 /** 手机状态栏那种时间 */
 export const randClock = () => `${randInt(0, 23)}:${String(randInt(0, 59)).padStart(2, '0')}`;
 

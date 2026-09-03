@@ -19,13 +19,16 @@ interface Hit {
 
 const MAX = 30;
 
-function nameHits(query: string, names: string[]): Hit[] {
+function nameHits(query: string, names: string[], bare = false): Hit[] {
   const q = query.toLowerCase();
   return names
     .filter((n) => !q || n.toLowerCase().includes(q))
     .slice(0, MAX)
-    .map((n) => ({ insert: `@[${n}]`, label: n }));
+    .map((n) => ({ insert: bare ? n : `@[${n}]`, label: n }));
 }
+
+/** 光标停在 `[撤回] ` 后面。这行的名字是裸写的，没有 @ 可以触发补全 */
+const RECALL_HEAD = /^\s*[[【]\s*撤回\s*[\]】]\s*(.*)$/;
 
 function faceHits(query: string): Hit[] {
   const q = query.toLowerCase();
@@ -114,6 +117,8 @@ export function ScriptField({
   const [active, setActive] = useState(0);
   /** 上一次的查询词。查询词没变就别动选中项，不然方向键刚挪一格就被重置回 0 */
   const lastQuery = useRef<string | null>(null);
+  /** 输入法拼写中。这期间的文本是待选内容，拿它当查询词只会闪 */
+  const composing = useRef(false);
 
   const setRefs = useCallback(
     (el: HTMLTextAreaElement | null) => {
@@ -130,6 +135,27 @@ export function ScriptField({
     if (!ta) return setMenu(null);
     const at = ta.selectionStart;
     if (at !== ta.selectionEnd) return setMenu(null);
+    const lineStart = ta.value.lastIndexOf('\n', at - 1) + 1;
+    const toCaret = ta.value.slice(lineStart, at);
+
+    // 撤回行：进了这一行就直接列人名，不用先打 @
+    const rc = RECALL_HEAD.exec(toCaret);
+    if (rc && !rc[1].includes('@')) {
+      const hits = nameHits(rc[1], names, true);
+      if (!hits.length) {
+        lastQuery.current = null;
+        return setMenu(null);
+      }
+      const start = at - rc[1].length;
+      const { x, y } = caretXY(ta, start);
+      const query = `撤回:${rc[1]}`;
+      if (lastQuery.current !== query) {
+        lastQuery.current = query;
+        setActive(0);
+      }
+      return setMenu({ start, hits, x, y: y + parseFloat(getComputedStyle(ta).lineHeight || '20'), query });
+    }
+
     const line = ta.value.slice(0, at);
     // 触发符后面不能有空格、换行、方括号，不然就是已经写完了
     const m = /([@/])([^\s@/[\]]{0,12})$/.exec(line);
@@ -152,9 +178,13 @@ export function ScriptField({
     setMenu({ start, hits, x, y: y + parseFloat(getComputedStyle(ta).lineHeight || '20'), query });
   }, [names]);
 
+  /**
+   * 补全跟着「值变了」走，不跟着按键走。
+   * 中文是输入法一次性塞进来的，敲下去的是拼音、提交时按的是空格或回车 ——
+   * 挂在 keyup 上的话，打「芝麻糊」永远等不到那个字的按键事件。
+   */
   useLayoutEffect(() => {
-    if (menu) refresh();
-    // value 变了要重算，但 refresh 依赖 names，交给下面的 effect 统一处理
+    if (!composing.current) refresh();
   }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -221,9 +251,15 @@ export function ScriptField({
           }
         }}
         onKeyUp={(e) => {
-          // 方向键和回车已经在 keydown 里处理过了，
-          // 这里再刷一次只会把选中项打回原形
-          if (['ArrowDown', 'ArrowUp', 'Enter', 'Tab', 'Escape'].includes(e.key)) return;
+          // 只管移动光标那几个键：值没变但位置变了，也要重算。
+          // 上下键和回车归 keydown 管，这里再刷一次会把选中项打回原形
+          if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) refresh();
+        }}
+        onCompositionStart={() => {
+          composing.current = true;
+        }}
+        onCompositionEnd={() => {
+          composing.current = false;
           refresh();
         }}
         onClick={refresh}

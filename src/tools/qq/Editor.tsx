@@ -10,7 +10,7 @@ import { Button, IconButton, Segmented, Slider, Switch, TextField } from '../../
 import { IconDelete, IconDice, IconExport, IconImage, IconPerson } from '../../ui/icons';
 import { AvatarPicker } from '../../ui/AvatarPicker';
 import { readImageFile } from '../../ui/file';
-import { pick, randClock, randInt } from '../../ui/random';
+import { randClock, randInt, randUnread } from '../../ui/random';
 import { ExportSheet } from '../../export/ExportSheet';
 import { ScriptField } from './ScriptField';
 import { FacePanel } from './FacePanel';
@@ -203,7 +203,7 @@ export function QQEditor() {
                 onClick={() =>
                   setData((d) => ({
                     ...d,
-                    header: { ...d.header, unread: pick(['', '', '2', '5', '9', '12', '36', '99+']) },
+                    header: { ...d.header, unread: randUnread(d.header.unread) },
                     statusBar: { ...d.statusBar, time: randClock(), battery: randInt(15, 100) },
                   }))
                 }
