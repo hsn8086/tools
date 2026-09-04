@@ -113,8 +113,7 @@ export function CfEditor() {
             </div>
             {phase.kind === 'contests' && <ProgressBar value={phase.done / Math.max(1, phase.total)} />}
             <p className="helper">
-              读 Codeforces 官方接口，把这些号的 rated 场次按时间穿成一条，每场用当场完整名单重算 delta——
-              不是把各自的涨跌加起来，同一场被两个号打过只留名次好的那次。官方接口限流，几十场要跑一两分钟。
+              按时间合并所有 handle 的 rated 比赛，每场重新计算 delta，不直接相加各自涨跌。同一场如果有多个号参赛，只保留成绩最好的那次。受官方接口限流，几十场大概需要一两分钟。
             </p>
           </div>
 
@@ -122,7 +121,9 @@ export function CfEditor() {
             <div className="section-head">
               <h4>卡片</h4>
             </div>
-            <TextField label="标题" value={data.title} onChange={(v) => patch('title', v)} />
+            {/* 不叫“标题”：分区已经叫“卡片”了，两层同义标签叠在一起只会卡壳，
+                叫它实际会变的那个东西更直接 */}
+            <TextField label="卡片上的名字" value={data.title} onChange={(v) => patch('title', v)} />
             <div className="row">
               <span className="muted grow">配色</span>
               <Segmented

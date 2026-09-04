@@ -421,8 +421,30 @@ select {
 .tf[data-multiline] textarea {
   height: auto;
   min-height: 88px;
+  max-height: min(46vh, 420px);
+  /* 支持的浏览器里跟着内容长，常见的几行输入根本不会出现滚动条 */
+  field-sizing: content;
   padding: 15px var(--sp-4);
   line-height: 1.6;
+  scrollbar-width: thin;
+  scrollbar-color: var(--md-outline-variant) transparent;
+}
+
+/* 真滑到需要滚动条时，默认那根会连着灏色轨道一起压在描边的圆角上。
+   轨道透明，拇指用透明边框 + background-clip 往内收三像素 */
+.tf textarea::-webkit-scrollbar {
+  width: 10px;
+}
+
+.tf textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tf textarea::-webkit-scrollbar-thumb {
+  background: var(--md-outline-variant);
+  background-clip: content-box;
+  border: 3px solid transparent;
+  border-radius: var(--shape-full);
 }
 
 .tf input::placeholder,
@@ -771,6 +793,12 @@ select {
 .section-head h4 {
   flex: 1;
   min-width: 0;
+}
+
+/* 分区标题后紧跟输入框时，负边距会把它和输入框的浮动标签挤到一块，
+   两行同色小字叠在一起像两层标题。这里把距离补回来 */
+.section-head + .tf {
+  margin-top: var(--sp-2);
 }
 
 .row {
