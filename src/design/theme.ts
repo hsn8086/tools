@@ -66,23 +66,32 @@ export function resolveMode(mode: Mode): 'light' | 'dark' {
   return mediaQuery.matches ? 'dark' : 'light';
 }
 
-export function applyTheme(seed: string, mode: Mode) {
-  const dark = resolveMode(mode) === 'dark';
-  contrastQuery ??= window.matchMedia('(prefers-contrast: more)');
-
+/** 一套完整的角色色，键就是 CSS 变量名。给卡片这种要脱离页面主题的地方用 */
+export function schemeVars(seed: string, dark: boolean, contrastLevel = 0): Record<string, string> {
   const scheme = new DynamicScheme({
     sourceColorHct: Hct.fromInt(argbFromHex(seed)),
     variant: Variant.TONAL_SPOT,
     isDark: dark,
-    contrastLevel: contrastQuery.matches ? 0.5 : 0,
+    contrastLevel,
     specVersion: '2025',
     platform: 'phone',
   });
 
-  const root = document.documentElement;
+  const vars: Record<string, string> = {};
   for (const key of ROLE_KEYS) {
     const color = MaterialDynamicColors[key] as { getArgb(s: DynamicScheme): number };
-    root.style.setProperty(`--md-${kebab(key)}`, hexFromArgb(color.getArgb(scheme)));
+    vars[`--md-${kebab(key)}`] = hexFromArgb(color.getArgb(scheme));
+  }
+  return vars;
+}
+
+export function applyTheme(seed: string, mode: Mode) {
+  const dark = resolveMode(mode) === 'dark';
+  contrastQuery ??= window.matchMedia('(prefers-contrast: more)');
+
+  const root = document.documentElement;
+  for (const [name, value] of Object.entries(schemeVars(seed, dark, contrastQuery.matches ? 0.5 : 0))) {
+    root.style.setProperty(name, value);
   }
 
   root.dataset.mode = dark ? 'dark' : 'light';

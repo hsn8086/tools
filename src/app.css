@@ -346,6 +346,55 @@ select {
 }
 
 /* ============================================================
+   直线进度条（MD3E：已完成段与剩余轨道之间留缺口，末端有停止点）
+   ============================================================ */
+
+.progress {
+  position: relative;
+  height: 4px;
+  border-radius: var(--shape-full);
+  overflow: hidden;
+}
+
+.progress-active,
+.progress-track {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: var(--shape-full);
+  /* 进度每几秒才跳一次，不补过渡就变成一格一格的闪 */
+  transition: width var(--dur-menu) var(--ease-out), left var(--dur-menu) var(--ease-out);
+}
+
+.progress-active {
+  left: 0;
+  background: var(--md-primary);
+}
+
+.progress-track {
+  right: 0;
+  background: var(--md-secondary-container);
+}
+
+.progress-stop {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 4px;
+  height: 4px;
+  border-radius: var(--shape-full);
+  background: var(--md-primary);
+  transform: translateY(-50%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-active,
+  .progress-track {
+    transition: none;
+  }
+}
+
+/* ============================================================
    输入框 —— MD3 描边样式，缺口是真的 fieldset/legend 缺口
    ============================================================ */
 

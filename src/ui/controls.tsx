@@ -68,6 +68,21 @@ export function Segmented<T extends string | number>({
   );
 }
 
+/**
+ * MD3E 直线进度条：轨道和已完成段之间留一道缺口，末端一个停止点。
+ * 缺口是这版规格的识别特征，也让「还剩多少」在窄条上更看得出来。
+ */
+export function ProgressBar({ value }: { value: number }) {
+  const pct = Math.max(0, Math.min(1, value)) * 100;
+  return (
+    <div className="progress" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
+      <span className="progress-active" style={{ width: `${pct}%` }} />
+      <span className="progress-track" style={{ left: `calc(${pct}% + 4px)` }} />
+      <span className="progress-stop" />
+    </div>
+  );
+}
+
 export function Switch({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: ReactNode }) {
   return (
     <label className="switch">

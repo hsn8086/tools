@@ -1,0 +1,264 @@
+/* Codeforces 合并战绩卡。
+   颜色走 MD3E 角色变量（Card.tsx 按卡片自己的深浅模式写在根元素上）。
+
+   浅色模式最容易翻车的地方是「什么都想上色」：段位带铺满容器色、三块统计各占一个
+   容器角色、涨跌胶囊又跟着段位变色——加起来六七种彩色挤在 390px 里，就显得廉价。
+   这里只留三处颜色：主数字（段位）、折线（账号）、涨跌（红绿）。其余全部走中性面。 */
+
+:host {
+  all: initial;
+  display: block;
+  contain: paint;
+}
+
+.cf {
+  /* font 缩写里写 inherit 是非法值，整条声明会被丢掉，所以字体走变量 */
+  --cf-font: system-ui, -apple-system, 'PingFang SC', 'Noto Sans SC', 'Segoe UI', sans-serif;
+  /* 图区底色。SVG 里的描边环要用同一个值才能"挖"出干净的边 */
+  --cf-plot-bg: var(--md-surface-container-low);
+  /* --cf-hairline 由 Card.tsx 写入（需要比色阶变量更精确的一个值），这里只做兑底 */
+  --cf-hairline: var(--md-outline-variant);
+  --cf-radius: 20px;
+
+  width: 390px;
+  box-sizing: border-box;
+  padding: 26px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  /* 组与组之间的呼吸；组内部另算，间距本身就是分组信号 */
+  gap: 18px;
+
+  /* 浅色下卡面用 lowest（纯白），面板用 low，才有一层看得见的台阶。
+     surface 和 surface-container-low 只差两个色阶，铺在一起是糊的 */
+  background: var(--md-surface-container-lowest);
+  color: var(--md-on-surface);
+  font-family: var(--cf-font);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+.cf * {
+  box-sizing: border-box;
+}
+
+/* ---- 抬头 ---- */
+
+.cf-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 小字要正字距才好认，大字要负字距才不散——字距跟着字号走，不是全局一个值 */
+.cf-eyebrow {
+  font: 600 10px/1 var(--cf-font);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--md-on-surface-variant);
+  opacity: 0.85;
+}
+
+.cf-head h2 {
+  margin: -2px 0 0;
+  font: 650 22px/1.2 var(--cf-font);
+  letter-spacing: -0.015em;
+}
+
+.cf-handles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.cf-handle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+  background: var(--md-surface-container);
+  color: var(--md-on-surface);
+  font: 500 12px/1.35 var(--cf-font);
+  letter-spacing: 0.005em;
+}
+
+.cf-handle i {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+}
+
+/* ---- 主数字 ----
+   段位只用颜色和文字表达，不再给它一块底。右侧那一列跟数字底对齐，
+   把 62px 行高里本来空着的那块填上。 */
+
+.cf-hero {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 2px 0 -2px;
+}
+
+.cf-rating {
+  font: 700 62px/1 var(--cf-font);
+  letter-spacing: -0.045em;
+  color: var(--tier);
+}
+
+.cf-hero-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  /* 数字行高 1，盒子底部就是基线；提一点才能和数字的视觉底部齐 */
+  padding-bottom: 6px;
+}
+
+.cf-tier-name {
+  font: 650 14px/1.2 var(--cf-font);
+  letter-spacing: -0.01em;
+  color: var(--tier);
+}
+
+.cf-tier-range {
+  font: 400 11.5px/1.2 var(--cf-font);
+  letter-spacing: 0.01em;
+  color: var(--md-on-surface-variant);
+}
+
+/* ---- 图 ----
+   图和它的日期轴是一组，贴紧；跟上下别的块拉开 */
+
+.cf-plot {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.cf-chart {
+  border-radius: var(--cf-radius);
+  overflow: hidden;
+  background: var(--cf-plot-bg);
+  line-height: 0;
+}
+
+.cf-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.cf-axis {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4px;
+  font: 400 11px/1 var(--cf-font);
+  letter-spacing: 0.01em;
+  color: var(--md-on-surface-variant);
+}
+
+.cf-empty {
+  padding: 36px 0;
+  text-align: center;
+  border-radius: var(--cf-radius);
+  background: var(--cf-plot-bg);
+  color: var(--md-on-surface-variant);
+  font: 400 13px/1.4 var(--cf-font);
+}
+
+/* ---- 统计 ----
+   一块面板，细线分栏。三块独立色砖会跟主数字抢视线 */
+
+.cf-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-radius: var(--cf-radius);
+  background: var(--md-surface-container-low);
+}
+
+.cf-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 13px 8px 12px;
+}
+
+.cf-stat + .cf-stat {
+  box-shadow: inset 1px 0 0 var(--cf-hairline);
+}
+
+.cf-stat-v {
+  font: 650 19px/1.1 var(--cf-font);
+  letter-spacing: -0.02em;
+}
+
+/* 「19/34」里的分母降一级，重点是分子 */
+.cf-stat-v em {
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--md-on-surface-variant);
+}
+
+.cf-stat-l {
+  font: 400 11px/1.2 var(--cf-font);
+  letter-spacing: 0.02em;
+  color: var(--md-on-surface-variant);
+}
+
+/* ---- 最近几场 ---- */
+
+.cf-recent {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 2px;
+  border-radius: var(--cf-radius);
+  background: var(--md-surface-container-low);
+}
+
+.cf-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 12px;
+  font: 400 12px/1.35 var(--cf-font);
+}
+
+.cf-dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 999px;
+}
+
+.cf-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cf-rank {
+  color: var(--md-on-surface-variant);
+  font-size: 11px;
+  letter-spacing: 0.01em;
+}
+
+.cf-delta {
+  min-width: 46px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-align: center;
+  font: 600 11.5px/1.25 var(--cf-font);
+  letter-spacing: -0.005em;
+}
+
+.cf-mark {
+  text-align: center;
+  font: 400 10px/1 var(--cf-font);
+  letter-spacing: 0.05em;
+  color: var(--md-on-surface-variant);
+  opacity: 0.6;
+}
