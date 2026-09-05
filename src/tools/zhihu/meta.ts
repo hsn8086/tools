@@ -1,10 +1,8 @@
 import { lazy } from 'react';
 import type { ToolMeta } from '../../registry';
+import { toolInfo } from '../../site';
 
 export const meta: ToolMeta = {
-  id: 'zhihu',
-  name: '知乎生成器',
-  emoji: '💭',
-  desc: '自定义问答、认证与排版，生成知乎卡片截图',
+  ...toolInfo.zhihu,
   Component: lazy(() => import('./Editor').then((m) => ({ default: m.ZhihuEditor }))),
 };

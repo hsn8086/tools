@@ -547,7 +547,8 @@ select {
   }
 }
 
-.app-bar h1 {
+.app-bar h1,
+.app-bar-spacer {
   font: var(--type-title);
   letter-spacing: var(--track-title);
   margin: 0;
@@ -570,7 +571,7 @@ select {
   padding: var(--sp-6) var(--sp-4) var(--sp-5);
 }
 
-.hero h2 {
+.hero h1 {
   font: var(--type-display);
   letter-spacing: var(--track-display);
   margin: 0;
@@ -639,7 +640,7 @@ select {
   background: color-mix(in srgb, var(--card-fg) 14%, transparent);
 }
 
-.tool-card h3 {
+.tool-card h2 {
   font: var(--type-headline);
   letter-spacing: var(--track-headline);
   margin: 0;

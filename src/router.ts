@@ -5,7 +5,7 @@ const path = () => location.pathname.replace(/^\/+|\/+$/g, '');
 /**
  * 真实路径路由，不用 hash —— 这样分享出去的地址是 /zhihu，
  * 水印里印的也就是能直接打开的那一个。
- * 静态托管靠 `_redirects` 把所有路径回落到 index.html。
+ * 构建时为已注册的工具生成独立 HTML；未知路径使用 404.html。
  */
 export function useRoute() {
   const [route, setRoute] = useState(() => {

@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
+import { seoPages } from './scripts/seo';
 
 /**
  * Cloudflare Web Analytics。
@@ -41,7 +42,7 @@ function cloudflareAnalytics(token: string | undefined): Plugin {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_');
   return {
-    plugins: [react(), cloudflareAnalytics(env.VITE_CF_BEACON)],
+    plugins: [react(), cloudflareAnalytics(env.VITE_CF_BEACON), seoPages()],
     // dev 下禁用浏览器缓存：HMR 断连时（比如自动化浏览器里）避免拿到陈旧模块
     server: { host: true, port: 5173, headers: { 'Cache-Control': 'no-store' } },
   };

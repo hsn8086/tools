@@ -5,6 +5,7 @@ import { IconButton, Segmented } from './ui/controls';
 import { IconBack, IconForward } from './ui/icons';
 import { SnackbarProvider } from './ui/Snackbar';
 import { navigate, onNavClick, useRoute } from './router';
+import { updateSeo } from './site';
 
 const MODE_KEY = 'tools.mode';
 
@@ -21,8 +22,8 @@ export function App() {
   }, [mode]);
 
   useEffect(() => {
-    document.title = tool ? `${tool.name} · 小工具` : '小工具 · tools.hsn8086.com';
-  }, [tool]);
+    updateSeo(route);
+  }, [route]);
 
   return (
     <SnackbarProvider>
@@ -33,7 +34,7 @@ export function App() {
           </IconButton>
         )}
         {/* 首页的大标题已经写在内容里了，顶栏不再重复一遍 */}
-        <h1>{tool?.name ?? ''}</h1>
+        {tool ? <h1>{tool.name}</h1> : <span className="app-bar-spacer" />}
         <Segmented
           value={mode}
           onChange={setMode}
@@ -50,8 +51,13 @@ export function App() {
           <Suspense fallback={<p className="muted">加载中…</p>}>
             <tool.Component />
           </Suspense>
-        ) : (
+        ) : route === '' ? (
           <Home />
+        ) : (
+          <>
+            <h1>页面未找到</h1>
+            <a href="/" onClick={onNavClick('/')}>返回首页</a>
+          </>
         )}
       </main>
     </SnackbarProvider>
@@ -62,7 +68,7 @@ function Home() {
   return (
     <>
       <div className="hero">
-        <h2>小工具</h2>
+        <h1>小工具</h1>
       </div>
       <div className="grid">
         {tools.map((t, i) => (
@@ -74,7 +80,7 @@ function Home() {
             onClick={onNavClick(`/${t.id}`)}
           >
             <span className="tool-icon">{t.emoji}</span>
-            <h3>{t.name}</h3>
+            <h2>{t.name}</h2>
             <p>{t.desc}</p>
             <span className="tool-go">
               <IconForward />
