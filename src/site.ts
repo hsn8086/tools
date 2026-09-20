@@ -2,6 +2,14 @@ export const SITE_URL = 'https://tools.hsn8086.com';
 export const SITE_NAME = '小工具';
 
 export const toolInfo = {
+  note: {
+    id: 'note',
+    name: '便签生成器',
+    emoji: '📝',
+    desc: '把短句和小问题做成便签，六种风格随手换',
+    title: '便签生成器 - 短文本与问题卡片在线制作',
+    description: '在线制作短文本、问题与心情便签，提供色块海报、索引便签、票据、刊物、终端和明信片六种风格。支持排版调整、模板分享与高清图片导出，正文保留在本地浏览器。',
+  },
   'cf-merge': {
     id: 'cf-merge',
     name: 'Codeforces 合并战绩',
@@ -35,9 +43,9 @@ export function pageSeo(route: string) {
   const isHome = route === '';
   const title = tool
     ? `${tool.title} | ${SITE_NAME}`
-    : isHome ? '小工具 - 知乎、QQ 聊天截图生成器与 Codeforces 合并战绩' : '页面未找到 | 小工具';
+    : isHome ? '小工具 - 便签、知乎、QQ 截图生成器与 Codeforces 合并战绩' : '页面未找到 | 小工具';
   const description = tool?.description ?? (isHome
-    ? '小工具提供知乎问答截图生成器、QQ 聊天记录生成器和 Codeforces 多账号战绩合并。在线编辑、预览并导出图片，截图与编辑数据保留在本地浏览器。'
+    ? '小工具提供便签与短文本卡片、知乎问答截图、QQ 聊天记录生成器和 Codeforces 多账号战绩合并。在线编辑、预览并导出图片，截图与编辑数据保留在本地浏览器。'
     : '该页面不存在。');
   const url = `${SITE_URL}/${tool?.id ?? ''}`;
   const structuredData = tool ? {

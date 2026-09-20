@@ -17,6 +17,7 @@ export function ExportSheet({
   hostRef,
   fileName,
   watermark,
+  watermarkLabel = '保留小水印',
   onWatermarkChange,
   deps,
 }: {
@@ -26,20 +27,21 @@ export function ExportSheet({
   /** 下载文件名前缀 */
   fileName: string;
   watermark: boolean;
+  watermarkLabel?: string;
   onWatermarkChange: (v: boolean) => void;
   /** 内容变了要重渲染，把内容对象传进来当依赖 */
   deps: unknown;
 }) {
   const [level, setLevel] = useState(0);
   const [ratio, setRatio] = useState(2);
-  const [out, setOut] = useState<{ url: string; w: number; h: number; size: number; blob: Blob } | null>(null);
+  const [out, setOut] = useState<{ url: string; w: number; h: number; size: number; blob: Blob; deps: unknown; ratio: number; level: number } | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const snack = useSnackbar();
   const runId = useRef(0);
 
   const render = useCallback(
-    async (pixelRatio: number, lv: number) => {
+    async (pixelRatio: number, lv: number, snapshot: unknown) => {
       const host = hostRef.current;
       if (!host) return;
       const id = ++runId.current;
@@ -50,7 +52,7 @@ export function ExportSheet({
         if (id !== runId.current) return URL.revokeObjectURL(r.url);
         setOut((prev) => {
           if (prev) URL.revokeObjectURL(prev.url);
-          return { url: r.url, w: r.width, h: r.height, size: r.blob.size, blob: r.blob };
+          return { url: r.url, w: r.width, h: r.height, size: r.blob.size, blob: r.blob, deps: snapshot, ratio: pixelRatio, level: lv };
         });
       } catch (e) {
         if (id === runId.current) setErr(e instanceof Error ? e.message : String(e));
@@ -64,9 +66,11 @@ export function ExportSheet({
   // 打开时、参数变化时重渲染。滑块拖动防抖 120ms，避免每一帧都截一次图。
   useEffect(() => {
     if (!open) return;
-    const t = setTimeout(() => void render(ratio, level), 120);
-    return () => clearTimeout(t);
+    const t = setTimeout(() => void render(ratio, level, deps), 120);
+    return () => { clearTimeout(t); ++runId.current; };
   }, [open, ratio, level, deps, render]);
+
+  const current = !!out && out.deps === deps && out.ratio === ratio && out.level === level;
 
   return (
     <Sheet open={open} onClose={onClose} title="导出">
@@ -101,7 +105,7 @@ export function ExportSheet({
             onWatermarkChange(v);
             if (!v) snack('已去掉水印');
           }}
-          label="保留小水印"
+          label={watermarkLabel}
         />
       </div>
 
@@ -114,7 +118,7 @@ export function ExportSheet({
           <>
             <img className="out-preview" src={out.url} alt="导出预览" />
             <p className="muted" style={{ marginTop: 8, textAlign: 'center' }}>
-              {out.w}×{out.h}　{(out.size / 1024).toFixed(0)} KB{busy ? '　· 更新中…' : ''}
+              {out.w}×{out.h}　{(out.size / 1024).toFixed(0)} KB{busy || !current ? '　· 更新中…' : ''}
             </p>
           </>
         ) : (
@@ -126,7 +130,7 @@ export function ExportSheet({
         <Button
           variant="text"
           icon={<IconCopy />}
-          disabled={!out}
+          disabled={!current || busy}
           onClick={async () => {
             if (!out) return;
             try {
@@ -142,7 +146,7 @@ export function ExportSheet({
         <Button
           variant="filled"
           icon={<IconDownload />}
-          disabled={!out}
+          disabled={!current || busy}
           onClick={() =>
             out && downloadBlob(out.blob, `${fileName}-${stamp()}.${out.blob.type === 'image/png' ? 'png' : 'jpg'}`)
           }

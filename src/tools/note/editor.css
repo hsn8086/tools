@@ -1,0 +1,15 @@
+.note-tool .section { background: transparent; border-radius: 0; padding: 20px 8px 24px; border-bottom: 1px solid var(--md-outline-variant); margin: 0; }
+.note-tool .section h4 { letter-spacing: 0; }
+.note-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.note-templates { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.note-template { display: flex; flex-direction: column; align-items: center; gap: 10px; border: 2px solid transparent; border-radius: 8px; background: var(--md-surface-container-low); padding: 10px 4px; cursor: pointer; font-size: 13px; min-width: 0; }
+.note-template[aria-pressed='true'] { border-color: var(--md-primary); background: var(--md-secondary-container); color: var(--md-on-secondary-container); }
+.note-template:active { transform: scale(.98); }
+.note-thumbnail { display: block; position: relative; width: 75px; height: 100px; overflow: hidden; pointer-events: none; }
+.note-thumbnail > div { position: absolute; left: 0; top: 0; width: 375px; transform: scale(.2); transform-origin: top left; }
+.note-swatches { display: flex; gap: 8px; }
+.note-swatches button { width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--md-surface); cursor: pointer; }
+.note-swatches button[aria-pressed='true'] { outline: 2px solid var(--md-on-surface); outline-offset: 1px; }
+.note-tool output { font-size: 13px; font-variant-numeric: tabular-nums; }
+@media (max-width: 380px) { .note-fields { grid-template-columns: 1fr; } .note-templates { gap: 6px; } }
+@media (prefers-reduced-motion: reduce) { .note-template:active { transform: none; } }

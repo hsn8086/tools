@@ -24,6 +24,7 @@ export function usePreviewLayout(
   frameRef: RefObject<HTMLDivElement | null>,
   innerRef: RefObject<HTMLDivElement | null>,
   cardRef: RefObject<HTMLDivElement | null>,
+  minScale = MIN_SCALE,
 ) {
   useLayoutEffect(() => {
     const frame = frameRef.current;
@@ -58,7 +59,7 @@ export function usePreviewLayout(
       raf = 0;
       const t = mobile.matches ? clamp(window.scrollY / COLLAPSE_DISTANCE, 0, 1) : 0;
       const room = availH * (1 - (1 - COLLAPSE_TO) * t);
-      const scale = clamp(Math.min(fitW, room / cardH), MIN_SCALE, 1);
+      const scale = clamp(Math.min(fitW, room / cardH), minScale, 1);
       const shown = Math.min(cardH * scale, room);
 
       inner.style.width = `${cardW}px`;
@@ -90,5 +91,5 @@ export function usePreviewLayout(
       mobile.removeEventListener('change', measure);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [frameRef, innerRef, cardRef]);
+  }, [frameRef, innerRef, cardRef, minScale]);
 }
