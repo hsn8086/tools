@@ -223,10 +223,15 @@ export function QQEditor() {
                 ]}
               />
             </div>
-            {/* 顺序照着截图从上往下：状态栏、标题栏、输入栏，最后是正文里的那行提示 */}
+            {/* 顺序照着截图从上往下：状态栏、标题栏、消息昵称、输入栏，最后是正文里的那行提示 */}
             <div className="row">
               <Switch checked={data.statusBar.show} onChange={(v) => patch('statusBar', { show: v })} label="状态栏" />
               <Switch checked={data.header.show} onChange={(v) => patch('header', { show: v })} label="标题栏" />
+              <Switch
+                checked={data.showNames}
+                onChange={(v) => setData((d) => ({ ...d, showNames: v }))}
+                label="发言人昵称"
+              />
               <Switch checked={data.inputBar} onChange={(v) => setData((d) => ({ ...d, inputBar: v }))} label="输入栏" />
               <Switch
                 checked={data.showReactionNotice}

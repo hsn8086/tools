@@ -53,6 +53,9 @@ export interface QQData {
     unread: string;
   };
 
+  /** 每条消息上方的昵称和头衔。要遮人名时关掉 */
+  showNames: boolean;
+
   /** 底部输入栏，真实截图里一般都带着 */
   inputBar: boolean;
 

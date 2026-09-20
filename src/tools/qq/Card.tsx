@@ -177,7 +177,7 @@ export function QQCard({ data, theme }: { data: QQData; theme: 'light' | 'dark' 
             <div className="msg" data-self={p?.self ? 'true' : undefined}>
               <img className="avatar" src={p?.avatar} alt="" crossOrigin="anonymous" />
               <div className="col">
-                {it.name && (
+                {data.showNames && it.name && (
                   <div className="name">
                     {p?.title?.trim() && (
                       <span className="tag" data-kind={p.title.trim() === '群主' ? 'owner' : undefined}>

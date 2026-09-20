@@ -34,6 +34,7 @@ export const defaultData = (): QQData => ({
   },
   images: [],
   header: { show: true, title: '摸鱼交流中心(48)', unread: '12' },
+  showNames: true,
   inputBar: true,
   showReactionNotice: true,
   statusBar: { show: false, time: '9:41', battery: 82, island: true },
