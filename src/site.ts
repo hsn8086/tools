@@ -26,6 +26,14 @@ export const toolInfo = {
     title: 'QQ 聊天记录生成器 - 在线制作 QQ 聊天截图',
     description: '在线制作 iOS QQ 聊天记录截图，支持多人对话、QQ 表情、图片、戳一戳和撤回提示。按昵称与内容编写剧本，在浏览器本地生成并导出聊天图片。',
   },
+  tg: {
+    id: 'tg',
+    name: 'Telegram 聊天记录生成器',
+    emoji: '✈️',
+    desc: '写成剧本，生成 macOS Telegram 聊天截图',
+    title: 'Telegram 聊天记录生成器 - 在线制作 Telegram 聊天截图',
+    description: '在线制作 macOS Telegram 聊天截图，支持引用、转发、语音消息、图片、表情回应和已读回执。按昵称与内容编写剧本，深浅色主题，在浏览器本地生成并导出图片。',
+  },
   zhihu: {
     id: 'zhihu',
     name: '知乎生成器',
@@ -43,9 +51,9 @@ export function pageSeo(route: string) {
   const isHome = route === '';
   const title = tool
     ? `${tool.title} | ${SITE_NAME}`
-    : isHome ? '小工具 - 便签、知乎、QQ 截图生成器与 Codeforces 合并战绩' : '页面未找到 | 小工具';
+    : isHome ? '小工具 - 便签、知乎、QQ、Telegram 截图生成器与 Codeforces 合并战绩' : '页面未找到 | 小工具';
   const description = tool?.description ?? (isHome
-    ? '小工具提供便签与短文本卡片、知乎问答截图、QQ 聊天记录生成器和 Codeforces 多账号战绩合并。在线编辑、预览并导出图片，截图与编辑数据保留在本地浏览器。'
+    ? '小工具提供便签与短文本卡片、知乎问答截图、QQ 与 Telegram 聊天记录生成器和 Codeforces 多账号战绩合并。在线编辑、预览并导出图片，截图与编辑数据保留在本地浏览器。'
     : '该页面不存在。');
   const url = `${SITE_URL}/${tool?.id ?? ''}`;
   const structuredData = tool ? {

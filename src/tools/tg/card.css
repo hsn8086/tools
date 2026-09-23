@@ -1,0 +1,532 @@
+/* Telegram for macOS（Swift 客户端）聊天窗口。
+   按截图反推：窗口约 600px 宽，标题栏红绿灯 + 「Telegram @ hsn」，
+   聊天头部是头像 + 名字 + last seen，右边搜索/电话/菜单。
+   深色值：背景 #0e1621，头部 #17212b，进来 #182533，自己 #2b5278。
+   日期药丸、引用条、转发、语音条、大图表情、输入栏都照截图排。
+   浅色按 TG 桌面端的经典配色：进来灰白，自己淡绿。 */
+
+:host {
+  all: initial;
+  display: block;
+  contain: paint;
+}
+
+.tg {
+  --bg: #0e1621;
+  --head: #17212b;
+  --text: #f5f7f9;
+  --bubble: #182533;
+  --self: #2b5278;
+  --self-text: #ffffff;
+  --sec: #788896;
+  --accent: #64b7ef;
+  --pill: rgba(25, 36, 48, 0.92);
+  --pill-text: #aeb9c2;
+  --sys: #5f707d;
+  --voice: #4fd05e;
+  --chip: #232f3d;
+  --chip-text: #cfd6dc;
+  --mout: rgba(255, 255, 255, 0.62);
+  --quote-out: #a5d6a7;
+  --bar-out: rgba(255, 255, 255, 0.45);
+  --mark: rgba(255, 255, 255, 0.22);
+  --cap-bg: rgba(0, 0, 0, 0.45);
+
+  width: 600px;
+  position: relative;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.tg[data-theme='light'] {
+  --bg: #ffffff;
+  --head: #ffffff;
+  --text: #101214;
+  --bubble: #f1f1f1;
+  --self: #eeffde;
+  --self-text: #101214;
+  --sec: #7f8b95;
+  --accent: #3a9bd8;
+  --pill: #e8eaed;
+  --pill-text: #5c6870;
+  --sys: #98a2a9;
+  --voice: #4fae4e;
+  --chip: #e3e6e8;
+  --chip-text: #5c6870;
+  --mout: #6d8d63;
+  --quote-out: #4fae4e;
+  --bar-out: #63b45c;
+  --mark: rgba(0, 0, 0, 0.16);
+}
+
+.tg * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- macOS 窗口标题栏 ---------- */
+
+.titlebar {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  background: var(--head);
+}
+
+.dots {
+  display: flex;
+  gap: 8px;
+  padding: 0 12px;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: block;
+}
+
+.wtitle {
+  position: absolute;
+  left: 80px;
+  right: 80px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sec);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- 聊天头部 ---------- */
+
+.chat-head {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  background: var(--head);
+  border-top: 1px solid rgba(0, 0, 0, 0.22);
+}
+
+.tg[data-theme='light'] .chat-head {
+  border-top-color: rgba(0, 0, 0, 0.08);
+}
+
+.pava,
+.lava {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  flex: 0 0 38px;
+  object-fit: cover;
+}
+
+.lava {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.pinfo {
+  min-width: 0;
+}
+
+.pname {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.psub {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--sec);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.psub[data-online] {
+  color: var(--accent);
+}
+
+.hicons {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  color: var(--sec);
+}
+
+.hicon {
+  width: 20px;
+  height: 20px;
+}
+
+/* ---------- 消息区 ---------- */
+
+.list {
+  padding: 8px 16px 16px;
+}
+
+.dsep {
+  text-align: center;
+  margin: 8px 0 14px;
+}
+
+.dsep span {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--pill);
+  color: var(--pill-text);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.sysline {
+  text-align: center;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--sys);
+  margin: 10px 24px;
+}
+
+/* ---------- 一条消息 ---------- */
+
+.msg {
+  display: flex;
+  margin-top: 10px;
+}
+
+.list > *:first-child {
+  margin-top: 0;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  max-width: 78%;
+}
+
+.sender {
+  font-size: 13px;
+  line-height: 17px;
+  font-weight: 500;
+  margin: 0 0 3px 4px;
+}
+
+.bubble {
+  position: relative;
+  background: var(--bubble);
+  border-radius: 12px;
+  border-bottom-left-radius: 5px;
+  padding: 8px 10px 7px;
+  font-size: 14px;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  min-width: 60px;
+}
+
+.lnk,
+.at {
+  color: var(--accent);
+}
+
+.lnk {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* 消息右下角的时间 + 勾：浮在最后一行右侧 */
+
+.mt {
+  float: right;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin: 7px 0 0 10px;
+  font-size: 11px;
+  line-height: 12px;
+  color: var(--sec);
+  white-space: nowrap;
+}
+
+.mt .tick {
+  width: 15px;
+  height: 12px;
+}
+
+/* ---------- 引用条 ---------- */
+
+.reply {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 5px;
+  min-width: 0;
+}
+
+.rbar {
+  flex: 0 0 3px;
+  border-radius: 2px;
+  background: var(--bar-out);
+}
+
+.rname {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 15px;
+  color: var(--quote-out);
+}
+
+.rtext {
+  font-size: 12px;
+  line-height: 15px;
+  opacity: 0.72;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 320px;
+}
+
+/* ---------- 转发 ---------- */
+
+.fwd {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--sec);
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- 自己发的 ---------- */
+
+.msg[data-self] {
+  justify-content: flex-end;
+}
+
+.msg[data-self] .col {
+  align-items: flex-end;
+}
+
+.msg[data-self] .bubble {
+  background: var(--self);
+  color: var(--self-text);
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 5px;
+}
+
+.msg[data-self] .mt {
+  color: var(--mout);
+}
+
+.msg[data-self] .lnk,
+.msg[data-self] .at {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.msg[data-self] .fwd {
+  color: var(--mout);
+}
+
+/* ---------- 图片消息 ---------- */
+
+.media {
+  position: relative;
+  max-width: 300px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bubble);
+}
+
+.msg[data-self] .media {
+  background: var(--self);
+}
+
+.pic {
+  display: block;
+  max-width: 300px;
+  max-height: 320px;
+}
+
+.cap {
+  padding: 7px 10px 6px;
+  font-size: 14px;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.msg[data-self] .cap {
+  color: var(--self-text);
+}
+
+.msg[data-self] .cap .mt {
+  color: var(--mout);
+}
+
+/* 没文字说明时，时间压在图右下角的小药丸里 */
+
+.mt-media {
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  float: none;
+  margin: 0;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: var(--cap-bg);
+  color: #fff;
+}
+
+/* ---------- 语音条 ---------- */
+
+.vbubble {
+  min-width: 200px;
+}
+
+.vline {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.vplay {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--voice);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.vplay-ic {
+  width: 15px;
+  height: 15px;
+  margin-left: 2px;
+}
+
+.vwave {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 26px;
+}
+
+.vwave i {
+  width: 3px;
+  border-radius: 2px;
+  background: var(--voice);
+}
+
+.vdur {
+  font-size: 12px;
+  color: var(--sec);
+  align-self: flex-end;
+  padding-bottom: 1px;
+}
+
+/* ---------- 大图表情（整条只有表情） ---------- */
+
+.bemoji {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 6px;
+  font-size: 56px;
+  line-height: 1.05;
+}
+
+.bemoji .mt {
+  float: none;
+  margin: 0 0 6px;
+}
+
+/* ---------- 表情回应 ---------- */
+
+.reacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 5px;
+}
+
+.react {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: var(--chip);
+  color: var(--chip-text);
+  font-size: 13px;
+  line-height: 1;
+}
+
+.react-emoji {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* ---------- 底部输入栏 ---------- */
+
+.inputbar {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+  background: var(--head);
+  color: var(--sec);
+}
+
+.iicon {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+
+.ph {
+  flex: 1;
+  text-align: center;
+  font-size: 14px;
+  color: var(--sys);
+  white-space: nowrap;
+}
+
+/* ---------- 水印 ---------- */
+
+.watermark {
+  position: absolute;
+  right: 8px;
+  bottom: 6px;
+  font-size: 9px;
+  letter-spacing: 0.2px;
+  color: var(--mark);
+  pointer-events: none;
+}

@@ -13,6 +13,7 @@ export function AvatarPicker({
   size = 44,
   onPick,
   onReset,
+  fallback,
 }: {
   src: string;
   label: string;
@@ -20,6 +21,8 @@ export function AvatarPicker({
   onPick: (dataUrl: string) => void;
   /** 传了才显示右上角那颗「恢复默认」 */
   onReset?: () => void;
+  /** src 为空时画的东西（比如 TG 的字母头像），不传还是空 img */
+  fallback?: React.ReactNode;
 }) {
   const input = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
@@ -63,7 +66,7 @@ export function AvatarPicker({
           }
         }}
       >
-        <img src={src} alt="" />
+        {src ? <img src={src} alt="" /> : (fallback ?? <img src={src} alt="" />)}
         <span className="veil">
           <IconCamera />
         </span>

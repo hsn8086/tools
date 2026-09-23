@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test:seo": "pnpm build && node scripts/check-seo.mjs",
     "test:note": "pnpm build && node scripts/check-note.mjs",
-    "test:zhihu": "pnpm build && node scripts/check-dezhihu.mjs"
+    "test:zhihu": "pnpm build && node scripts/check-dezhihu.mjs",
+    "test:tg": "pnpm build && node scripts/check-tg.mjs"
   },
   "dependencies": {
     "@material/material-color-utilities": "^0.4.0",
