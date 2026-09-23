@@ -182,7 +182,7 @@ export function TGEditor() {
                         alignItems: 'center',
                         justifyContent: 'center',
                         borderRadius: '50%',
-                        background: nameColor(data.peer.name),
+                        background: nameColor(data.peer.name, theme),
                         color: '#fff',
                         fontSize: 16,
                         fontWeight: 600,

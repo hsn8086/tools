@@ -1,6 +1,7 @@
 import { Fragment, type ReactNode } from 'react';
 import type { TGData, TGItem } from './types';
 import { attrsOf, clockOf, isBareEmoji, nameColor, parseScript } from './script';
+import { tgIcons } from './icons';
 
 /** @某人 和 http 链接上色，跟 TG 一致。@[带空格的名字] 也认 */
 function inline(text: string): ReactNode {
@@ -22,65 +23,34 @@ function inline(text: string): ReactNode {
 
 const Dot = ({ c }: { c: string }) => <i className="dot" style={{ background: c }} />;
 
-const IconSearch = () => (
-  <svg className="hicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-    <circle cx="10.5" cy="10.5" r="6.5" />
-    <path d="M15.5 15.5 21 21" />
-  </svg>
+type Theme = 'light' | 'dark';
+const ic = (set: { dark: string; light: string }, theme: Theme) => set[theme];
+
+const HIcon = ({ src, alt }: { src: string; alt: string }) => (
+  <img className="hicon" src={src} alt={alt} draggable={false} />
+);
+const IIcon = ({ src, alt }: { src: string; alt: string }) => (
+  <img className="iicon" src={src} alt={alt} draggable={false} />
 );
 
-const IconPhone = () => (
-  <svg className="hicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M6.6 3.2c.7-.2 1.6 0 2 .7l2 3.2c.4.6.3 1.5-.3 2l-1.3 1c.9 1.8 2.2 3.1 4 4l1-1.3c.5-.6 1.4-.7 2-.3l3.2 2c.7.4.9 1.3.7 2-.4 1.3-1.6 2.3-3 2.5-1 .1-2.1-.2-3-.7a17.6 17.6 0 0 1-5.4-5.4c-.5-.9-.8-2-.7-3 .2-1.4 1.2-2.6 2.5-3Z" />
-  </svg>
-);
-
-const IconMenu = () => (
-  <svg className="hicon" viewBox="0 0 24 24" fill="currentColor">
-    <circle cx="5" cy="12" r="1.7" />
-    <circle cx="12" cy="12" r="1.7" />
-    <circle cx="19" cy="12" r="1.7" />
-  </svg>
-);
-
-const IconClip = () => (
-  <svg className="iicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m18 11.8-7.4 7.4a4.2 4.2 0 0 1-6-6l8-8a2.8 2.8 0 0 1 4 4l-7.4 7.4a1.4 1.4 0 0 1-2-2l6.8-6.8" />
-  </svg>
-);
-
-const IconSmile = () => (
-  <svg className="iicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-    <circle cx="12" cy="12" r="9" />
-    <path d="M8.3 14.2a5 5 0 0 0 7.4 0" />
-    <circle cx="9" cy="9.6" r=".9" fill="currentColor" stroke="none" />
-    <circle cx="15" cy="9.6" r=".9" fill="currentColor" stroke="none" />
-  </svg>
-);
-
-const IconMic = () => (
-  <svg className="iicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="9" y="3" width="6" height="11" rx="3" />
-    <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3" />
-  </svg>
-);
+/** 消息右下角的勾：单勾已送达，双勾已读。图标是 TG 官方 PNG 的染色版 */
+const Check = ({ read, variant, theme }: { read: TGData['readState']; variant: 'bubble' | 'accent' | 'overlay'; theme: Theme }) => {
+  if (read === 'none') return null;
+  const set = read === 'read' ? tgIcons.check2 : tgIcons.check1;
+  const src =
+    variant === 'overlay'
+      ? set.overlay
+      : variant === 'accent'
+        ? ic({ dark: set.accentDark, light: set.accentLight }, theme)
+        : ic({ dark: set.bubbleDark, light: set.bubbleLight }, theme);
+  return <img className="tick" src={src} alt="" draggable={false} />;
+};
 
 const IconPlay = () => (
   <svg className="vplay-ic" viewBox="0 0 24 24" fill="currentColor">
     <path d="M8.5 5.8v12.4c0 .8.9 1.3 1.6.9l9.6-6.2c.6-.4.6-1.3 0-1.7L10.1 5c-.7-.4-1.6.1-1.6.8Z" />
   </svg>
 );
-
-const Check = ({ read }: { read: TGData['readState'] }) =>
-  read === 'none' ? null : read === 'read' ? (
-    <svg className="tick" viewBox="0 0 22 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m1.5 8.5 3.5 3.5L13 4M9 11.5l3.5 3.5L20.5 4" />
-    </svg>
-  ) : (
-    <svg className="tick" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m2 8.8 4 4L14.5 4" />
-    </svg>
-  );
 
 /** 语音条的假波形：按消息 id 散列出一串柱高，同一消息每次画出来都一样 */
 function wave(id: string): number[] {
@@ -95,9 +65,9 @@ function wave(id: string): number[] {
 }
 
 /** TG 默认头像：名字首字母 + 按名字挑的渐变底色 */
-function LetterAvatar({ name }: { name: string }) {
+function LetterAvatar({ name, theme }: { name: string; theme: Theme }) {
   return (
-    <span className="lava" style={{ background: nameColor(name) }}>
+    <span className="lava" style={{ background: nameColor(name, theme) }}>
       {(name.trim()[0] ?? '?').toUpperCase()}
     </span>
   );
@@ -109,19 +79,25 @@ export function TGCard({ data, theme }: { data: TGData; theme: 'light' | 'dark' 
   const img = (id?: string) => data.images.find((x) => x.id === id)?.src;
   const self = (name: string) => attrsOf(data, name).self;
 
-  const meta = (it: Extract<TGItem, { kind: 'msg' }>) => (
+  const meta = (it: Extract<TGItem, { kind: 'msg' }>, variant: 'bubble' | 'accent' | 'overlay') => (
     <span className="mt">
       {times.get(it.id)}
-      {self(it.name) && <Check read={data.readState} />}
+      {self(it.name) && <Check read={data.readState} variant={variant} theme={theme} />}
     </span>
   );
 
   const quote = (it: Extract<TGItem, { kind: 'msg' }>, out: boolean) =>
     it.replyTo ? (
       <div className="reply">
-        <i className="rbar" style={out ? undefined : { background: nameColor(it.replyTo!.name) }} />
+        <i
+          className="rbar"
+          style={{ background: out ? undefined : nameColor(it.replyTo.name, theme) }}
+        />
         <div className="rbody">
-          <div className="rname" style={out ? undefined : { color: nameColor(it.replyTo!.name) }}>
+          <div
+            className="rname"
+            style={{ color: out ? undefined : nameColor(it.replyTo.name, theme) }}
+          >
             {it.replyTo.name}
           </div>
           <div className="rtext">{it.replyTo.text}</div>
@@ -144,7 +120,11 @@ export function TGCard({ data, theme }: { data: TGData; theme: 'light' | 'dark' 
 
       {data.peer.show && (
         <div className="chat-head">
-          {data.peer.avatar ? <img className="pava" src={data.peer.avatar} alt="" /> : <LetterAvatar name={data.peer.name} />}
+          {data.peer.avatar ? (
+            <img className="pava" src={data.peer.avatar} alt="" />
+          ) : (
+            <LetterAvatar name={data.peer.name} theme={theme} />
+          )}
           <div className="pinfo">
             <div className="pname">{data.peer.name}</div>
             <div className="psub" data-online={data.peer.online || undefined}>
@@ -152,9 +132,9 @@ export function TGCard({ data, theme }: { data: TGData; theme: 'light' | 'dark' 
             </div>
           </div>
           <div className="hicons">
-            <IconSearch />
-            <IconPhone />
-            <IconMenu />
+            <HIcon src={ic(tgIcons.search, theme)} alt="search" />
+            <HIcon src={ic(tgIcons.call, theme)} alt="call" />
+            <HIcon src={ic(tgIcons.more, theme)} alt="more" />
           </div>
         </div>
       )}
@@ -184,7 +164,7 @@ export function TGCard({ data, theme }: { data: TGData; theme: 'light' | 'dark' 
               <div className="msg" data-self={out || undefined}>
                 <div className="col">
                   {data.group && !out && it.name ? (
-                    <div className="sender" style={{ color: nameColor(it.name) }}>
+                    <div className="sender" style={{ color: nameColor(it.name, theme) }}>
                       {it.name}
                     </div>
                   ) : null}
@@ -192,36 +172,54 @@ export function TGCard({ data, theme }: { data: TGData; theme: 'light' | 'dark' 
                   {src ? (
                     <div className="media" data-self={out || undefined}>
                       <img className="pic" src={src} alt="" />
-                      {it.text ? <div className="cap">{inline(it.text)}{meta(it)}</div> : <span className="mt mt-media">{times.get(it.id)}{self(it.name) && <Check read={data.readState} />}</span>}
+                      {it.text ? (
+                        <div className="cap">
+                          {inline(it.text)}
+                          {meta(it, 'bubble')}
+                        </div>
+                      ) : (
+                        <span className="mt mt-media">
+                          {times.get(it.id)}
+                          {self(it.name) && <Check read={data.readState} variant="overlay" theme={theme} />}
+                        </span>
+                      )}
                     </div>
                   ) : it.voice ? (
                     <div className="bubble vbubble">
                       {quote(it, out)}
-                      {it.forward ? <div className="fwd">Forwarded from: <span className="fwd-name">{it.forward}</span></div> : null}
+                      {it.forward ? (
+                        <div className="fwd">
+                          Forwarded from: <span className="fwd-name">{it.forward}</span>
+                        </div>
+                      ) : null}
                       <div className="vline">
                         <span className="vplay">
                           <IconPlay />
                         </span>
                         <span className="vwave">
                           {wave(it.id).map((h, i) => (
-                            <i key={i} style={{ height: h }} />
+                            <i key={i} className={i < 20 ? 'on' : undefined} style={{ height: h }} />
                           ))}
                         </span>
                         <span className="vdur">{it.voice}</span>
-                        {meta(it)}
+                        {meta(it, 'bubble')}
                       </div>
                     </div>
                   ) : bare ? (
                     <span className="bemoji">
                       {it.text}
-                      {meta(it)}
+                      {meta(it, 'accent')}
                     </span>
                   ) : (
                     <div className="bubble">
                       {quote(it, out)}
-                      {it.forward ? <div className="fwd">Forwarded from: <span className="fwd-name">{it.forward}</span></div> : null}
+                      {it.forward ? (
+                        <div className="fwd">
+                          Forwarded from: <span className="fwd-name">{it.forward}</span>
+                        </div>
+                      ) : null}
                       {inline(it.text)}
-                      {meta(it)}
+                      {meta(it, 'bubble')}
                     </div>
                   )}
 
@@ -244,10 +242,12 @@ export function TGCard({ data, theme }: { data: TGData; theme: 'light' | 'dark' 
 
       {data.inputBar && (
         <div className="inputbar">
-          <IconClip />
-          <span className="ph">Write a message...</span>
-          <IconSmile />
-          <IconMic />
+          <IIcon src={ic(tgIcons.attach, theme)} alt="attach" />
+          <div className="field">
+            <span className="ph">Write a message...</span>
+          </div>
+          <IIcon src={ic(tgIcons.emoji, theme)} alt="emoji" />
+          <IIcon src={ic(tgIcons.voice, theme)} alt="voice" />
         </div>
       )}
       {data.watermark.show && <div className="watermark">{data.watermark.text}</div>}

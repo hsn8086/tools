@@ -214,10 +214,11 @@ export function isBareEmoji(text: string): boolean {
   return graphemes.length <= 4 && /\p{Extended_Pictographic}/u.test(s);
 }
 
-/** TG 给每个人的名字色，按名字散列到固定调色板 */
-const NAME_COLORS = ['#f15b5b', '#e8a23d', '#a37ee1', '#53c05c', '#38a3d1', '#3a78c9', '#c0629f'];
-export function nameColor(name: string): string {
+/** TG 给每个人的名字色，按名字散列到官方 groupPeerName 调色板（深浅两套） */
+const NAME_COLORS_DARK = ['#ff8e86', '#ffa357', '#bf9aff', '#4dd6bf', '#45e8d1', '#7ac9ff', '#7aa2ff'];
+const NAME_COLORS_LIGHT = ['#fc5c51', '#fa790f', '#895dd5', '#0fb297', '#00c1a6', '#3ca5ec', '#3d72ed'];
+export function nameColor(name: string, theme: 'light' | 'dark' = 'dark'): string {
   let h = 0;
   for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
-  return NAME_COLORS[h % NAME_COLORS.length];
+  return (theme === 'dark' ? NAME_COLORS_DARK : NAME_COLORS_LIGHT)[h % NAME_COLORS_DARK.length];
 }

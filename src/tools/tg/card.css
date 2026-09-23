@@ -1,9 +1,7 @@
 /* Telegram for macOS（Swift 客户端）聊天窗口。
-   按截图反推：窗口约 600px 宽，标题栏红绿灯 + 「Telegram @ hsn」，
-   聊天头部是头像 + 名字 + last seen，右边搜索/电话/菜单。
-   深色值：背景 #0e1621，头部 #17212b，进来 #182533，自己 #2b5278。
-   日期药丸、引用条、转发、语音条、大图表情、输入栏都照截图排。
-   浅色按 TG 桌面端的经典配色：进来灰白，自己淡绿。 */
+   配色直接取 TelegramSwift/packages/ColorPalette：
+   深色 = nightAccentPalette，浅色 = dayClassicPalette。
+   图标是 Assets.xcassets 里的官方 PNG 按主题色染色（icons.ts）。 */
 
 :host {
   all: initial;
@@ -12,25 +10,30 @@
 }
 
 .tg {
-  --bg: #0e1621;
-  --head: #17212b;
-  --text: #f5f7f9;
-  --bubble: #182533;
-  --self: #2b5278;
+  /* nightAccent */
+  --bg: #18222d;
+  --head: #18222d;
+  --text: #ffffff;
+  --bubble: #213040;
+  --self: #3d6a97;
   --self-text: #ffffff;
-  --sec: #788896;
-  --accent: #64b7ef;
-  --pill: rgba(25, 36, 48, 0.92);
-  --pill-text: #aeb9c2;
-  --sys: #5f707d;
-  --voice: #4fd05e;
-  --chip: #232f3d;
-  --chip-text: #cfd6dc;
-  --mout: rgba(255, 255, 255, 0.62);
-  --quote-out: #a5d6a7;
-  --bar-out: rgba(255, 255, 255, 0.45);
-  --mark: rgba(255, 255, 255, 0.22);
+  --sec: #b1c3d5;
+  --accent: #2ea6ff;
+  --link-in: #62bcf9;
+  --link-out: #62bcf9;
+  --mt-out: rgba(239, 250, 255, 0.8);   /* grayTextBubble_outgoing / accentIconBubble_outgoing */
+  --pill: rgba(177, 195, 213, 0.16);    /* 日期/系统药丸：grayIcon 低透明 */
+  --pill-text: #b1c3d5;
+  --react-bg: rgba(177, 195, 213, 0.2); /* grayIcon.withAlphaComponent(0.2) */
+  --react-text: #2ea6ff;                /* accent */
+  --quote-out: #ffffff;                 /* chatReplyTitleBubble_outgoing */
+  --vcircle: #b1c3d5;                   /* fileActivityBackgroundBubble_incoming */
+  --vplay-in: #213040;
+  --vwave: #b1c3d5;                     /* waveformBackgroundBubble_* */
+  --vwave-on: #ffffff;                  /* waveformForegroundBubble_* */
+  --border: rgba(0, 0, 0, 0.3);
   --cap-bg: rgba(0, 0, 0, 0.45);
+  --mark: rgba(255, 255, 255, 0.22);
 
   width: 600px;
   position: relative;
@@ -43,23 +46,29 @@
 }
 
 .tg[data-theme='light'] {
+  /* dayClassic */
   --bg: #ffffff;
   --head: #ffffff;
-  --text: #101214;
-  --bubble: #f1f1f1;
-  --self: #eeffde;
-  --self-text: #101214;
-  --sec: #7f8b95;
-  --accent: #3a9bd8;
-  --pill: #e8eaed;
-  --pill-text: #5c6870;
-  --sys: #98a2a9;
-  --voice: #4fae4e;
-  --chip: #e3e6e8;
-  --chip-text: #5c6870;
-  --mout: #6d8d63;
-  --quote-out: #4fae4e;
-  --bar-out: #63b45c;
+  --text: #000000;
+  --bubble: #ffffff;
+  --self: #e1ffc7;
+  --self-text: #000000;
+  --sec: #999999;
+  --accent: #2481cc;
+  --link-in: #2481cc;
+  --link-out: #004bad;
+  --mt-out: rgba(0, 140, 9, 0.8);
+  --pill: rgba(158, 158, 158, 0.18);
+  --pill-text: #999999;
+  --react-bg: rgba(158, 158, 158, 0.2);
+  --react-text: #2481cc;
+  --quote-out: #00a700;
+  --vcircle: #3ca7fe;
+  --vplay-in: #ffffff;
+  --vwave: rgba(60, 167, 254, 0.6);     /* waveformBackgroundBubble_incoming */
+  --vwave-on: #3ca7fe;                  /* waveformForegroundBubble_incoming */
+  --border: rgba(134, 169, 201, 0.5);   /* bubbleBorder_incoming */
+  --cap-bg: rgba(0, 0, 0, 0.45);
   --mark: rgba(0, 0, 0, 0.16);
 }
 
@@ -114,7 +123,7 @@
   gap: 12px;
   padding: 0 16px;
   background: var(--head);
-  border-top: 1px solid rgba(0, 0, 0, 0.22);
+  border-top: 1px solid var(--border);
 }
 
 .tg[data-theme='light'] .chat-head {
@@ -169,13 +178,13 @@
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 18px;
-  color: var(--sec);
+  gap: 16px;
 }
 
 .hicon {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
+  display: block;
 }
 
 /* ---------- 消息区 ---------- */
@@ -203,7 +212,7 @@
   text-align: center;
   font-size: 12px;
   line-height: 16px;
-  color: var(--sys);
+  color: var(--sec);
   margin: 10px 24px;
 }
 
@@ -239,16 +248,21 @@
   border-radius: 12px;
   border-bottom-left-radius: 5px;
   padding: 8px 10px 7px;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 13px;
+  line-height: 19px;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
   min-width: 60px;
 }
 
+.tg[data-theme='light'] .bubble {
+  border: 1px solid var(--border);
+  padding: 7px 9px 6px;
+}
+
 .lnk,
 .at {
-  color: var(--accent);
+  color: var(--link-in);
 }
 
 .lnk {
@@ -263,7 +277,7 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  margin: 7px 0 0 10px;
+  margin: 6px 0 0 10px;
   font-size: 11px;
   line-height: 12px;
   color: var(--sec);
@@ -271,8 +285,9 @@
 }
 
 .mt .tick {
-  width: 15px;
+  width: 12px;
   height: 12px;
+  display: block;
 }
 
 /* ---------- 引用条 ---------- */
@@ -280,14 +295,14 @@
 .reply {
   display: flex;
   gap: 7px;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
   min-width: 0;
 }
 
 .rbar {
   flex: 0 0 3px;
   border-radius: 2px;
-  background: var(--bar-out);
+  background: var(--quote-out);
 }
 
 .rname {
@@ -300,23 +315,28 @@
 .rtext {
   font-size: 12px;
   line-height: 15px;
-  opacity: 0.72;
+  color: inherit;
+  opacity: 0.85;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 320px;
 }
 
-/* ---------- 转发 ---------- */
+/* ---------- 转发：整行一个色，进来是链接蓝，自己是气泡内灰字 ---------- */
 
 .fwd {
   font-size: 12px;
   line-height: 16px;
-  color: var(--sec);
-  margin-bottom: 3px;
+  color: var(--link-in);
+  margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.fwd-name {
+  font-weight: 600;
 }
 
 /* ---------- 自己发的 ---------- */
@@ -337,17 +357,20 @@
 }
 
 .msg[data-self] .mt {
-  color: var(--mout);
+  color: var(--mt-out);
 }
 
 .msg[data-self] .lnk,
 .msg[data-self] .at {
-  color: inherit;
+  color: var(--link-out);
+}
+
+.msg[data-self] .lnk {
   text-decoration: underline;
 }
 
 .msg[data-self] .fwd {
-  color: var(--mout);
+  color: var(--mt-out);
 }
 
 /* ---------- 图片消息 ---------- */
@@ -372,8 +395,8 @@
 
 .cap {
   padding: 7px 10px 6px;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 13px;
+  line-height: 19px;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
@@ -383,7 +406,7 @@
 }
 
 .msg[data-self] .cap .mt {
-  color: var(--mout);
+  color: var(--mt-out);
 }
 
 /* 没文字说明时，时间压在图右下角的小药丸里 */
@@ -417,11 +440,26 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: var(--voice);
+  background: var(--vcircle);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: var(--vplay-in);
+}
+
+.msg[data-self] .vplay {
+  background: #ffffff;
+  color: var(--self);
+}
+
+.tg[data-theme='light'] .vplay {
+  background: var(--vcircle);
+  color: #ffffff;
+}
+
+.tg[data-theme='light'] .msg[data-self] .vplay {
+  background: #00a700;
+  color: #ffffff;
 }
 
 .vplay-ic {
@@ -441,7 +479,19 @@
 .vwave i {
   width: 3px;
   border-radius: 2px;
-  background: var(--voice);
+  background: var(--vwave);
+}
+
+.vwave i.on {
+  background: var(--vwave-on);
+}
+
+.tg[data-theme='light'] .msg[data-self] .vwave i {
+  background: rgba(0, 167, 0, 0.6);   /* waveformBackgroundBubble_outgoing */
+}
+
+.tg[data-theme='light'] .msg[data-self] .vwave i.on {
+  background: #00a700;                /* waveformForegroundBubble_outgoing */
 }
 
 .vdur {
@@ -449,6 +499,10 @@
   color: var(--sec);
   align-self: flex-end;
   padding-bottom: 1px;
+}
+
+.msg[data-self] .vdur {
+  color: var(--mt-out);
 }
 
 /* ---------- 大图表情（整条只有表情） ---------- */
@@ -466,12 +520,12 @@
   margin: 0 0 6px;
 }
 
-/* ---------- 表情回应 ---------- */
+/* ---------- 表情回应：气泡下面挂一排药丸 ---------- */
 
 .reacts {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 5px;
   margin-top: 5px;
 }
 
@@ -479,44 +533,59 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  height: 24px;
-  padding: 0 9px;
+  height: 26px;
+  min-width: 34px;
+  padding: 0 10px;
   border-radius: 999px;
-  background: var(--chip);
-  color: var(--chip-text);
+  background: var(--react-bg);
+  color: var(--react-text);
   font-size: 13px;
+  font-weight: 500;
   line-height: 1;
 }
 
 .react-emoji {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1;
+  color: initial;
 }
 
-/* ---------- 底部输入栏 ---------- */
+/* ---------- 底部输入栏：夹子时占位符左对齐，表情+麦克风贴右 ---------- */
 
 .inputbar {
-  height: 52px;
+  height: 50px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 0 16px;
+  gap: 20px;
+  padding: 0 20px;
   background: var(--head);
-  color: var(--sec);
+  border-top: 1px solid var(--border);
+}
+
+.tg[data-theme='light'] .inputbar {
+  border-top-color: rgba(0, 0, 0, 0.08);
 }
 
 .iicon {
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   flex: none;
+  display: block;
+}
+
+.field {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
 }
 
 .ph {
-  flex: 1;
-  text-align: center;
-  font-size: 14px;
-  color: var(--sys);
+  font-size: 13px;
+  color: var(--sec);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ---------- 水印 ---------- */
