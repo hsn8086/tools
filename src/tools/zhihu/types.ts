@@ -35,6 +35,13 @@ export interface StatusBar {
 export interface ZhihuData {
   theme: ZhihuTheme;
 
+  /**
+   * 去知乎化：隐藏一切知乎特有的元素（问题栏、赞同/听过、认证标、
+   * 关注/分享按钮、折叠箭头），页脚只留「时间 · 属地」的朴素写法，
+   * 让卡片看起来是一张普通的图文截图。
+   */
+  dezhihu: boolean;
+
   question: {
     show: boolean;
     title: string;

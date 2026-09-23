@@ -116,6 +116,12 @@ export function ZhihuEditor() {
               />
             </div>
             <div className="row">
+              <Switch checked={data.dezhihu} onChange={(v) => patch('dezhihu', v)} label="去知乎化" />
+            </div>
+            {data.dezhihu && (
+              <p className="helper">去掉头像、答主、「知乎 · N 个回答 · N 关注」与赞同数等平台元素，只保留问题标题和正文。</p>
+            )}
+            <div className="row">
               <Switch checked={data.statusBar.show} onChange={(v) => patch('statusBar', { show: v })} label="手机状态栏" />
               {data.statusBar.show && (
                 <Switch checked={data.statusBar.island} onChange={(v) => patch('statusBar', { island: v })} label="灵动岛" />
@@ -141,7 +147,7 @@ export function ZhihuEditor() {
           <Section
             title="问题"
             actions={
-              data.question.show && data.question.showMeta ? (
+              data.question.show && data.question.showMeta && !data.dezhihu ? (
                 <Dice
                   label="随机回答数和关注数"
                   onClick={() => patch('question', { answerCount: randAnswerCount(), followCount: randCount() })}
@@ -151,7 +157,7 @@ export function ZhihuEditor() {
           >
             <div className="row">
               <Switch checked={data.question.show} onChange={(v) => patch('question', { show: v })} label="显示问题" />
-              {data.question.show && (
+              {data.question.show && !data.dezhihu && (
                 <Switch
                   checked={data.question.showMeta}
                   onChange={(v) => patch('question', { showMeta: v })}
@@ -168,7 +174,7 @@ export function ZhihuEditor() {
                   value={data.question.title}
                   onChange={(v) => patch('question', { title: v })}
                 />
-                {data.question.showMeta && (
+                {data.question.showMeta && !data.dezhihu && (
                   <div className="row">
                     <div className="grow">
                       <TextField label="回答数" value={data.question.answerCount} onChange={(v) => patch('question', { answerCount: v })} />
@@ -182,6 +188,7 @@ export function ZhihuEditor() {
             )}
           </Section>
 
+          {!data.dezhihu && (
           <Section title="答主">
             <div className="avatar-row">
               <AvatarPicker
@@ -205,15 +212,16 @@ export function ZhihuEditor() {
                 匿名回答
               </Button>
             </div>
-            {anonymous ? (
+            {anonymous && (
               <p className="helper">支持点击、拖拽或粘贴更换头像。匿名状态下自动隐藏关注按钮、签名与认证标。</p>
-            ) : (
+            )}
+            {!anonymous && (
               <>
                 <TextField label="签名" value={data.author.headline} onChange={(v) => patch('author', { headline: v })} />
                 <div className="row">
                   <span className="muted grow">认证角标</span>
                   <Segmented
-                   
+
                     value={data.author.badge}
                     onChange={(v) => patch('author', { badge: v as BadgeKind })}
                     options={[
@@ -231,7 +239,9 @@ export function ZhihuEditor() {
               </>
             )}
           </Section>
+          )}
 
+          {!data.dezhihu && (
           <Section
             title="赞同"
             actions={
@@ -262,6 +272,7 @@ export function ZhihuEditor() {
               </div>
             )}
           </Section>
+          )}
 
           <ContentSection data={data} setData={setData} />
 
@@ -277,29 +288,35 @@ export function ZhihuEditor() {
                 两种标注方式混在同一行里就乱了 */}
             <div className="row">
               <Switch checked={data.footer.show} onChange={(v) => patch('footer', { show: v })} label="显示页脚" />
-              <Switch
-                checked={data.showExpandChevron}
-                onChange={(v) => setData((d) => ({ ...d, showExpandChevron: v }))}
-                label="折叠箭头"
-              />
-              {data.footer.show && (
-                <Switch checked={data.footer.noRepost} onChange={(v) => patch('footer', { noRepost: v })} label="禁止转载" />
+              {!data.dezhihu && (
+                <>
+                  <Switch
+                    checked={data.showExpandChevron}
+                    onChange={(v) => setData((d) => ({ ...d, showExpandChevron: v }))}
+                    label="折叠箭头"
+                  />
+                  {data.footer.show && (
+                    <Switch checked={data.footer.noRepost} onChange={(v) => patch('footer', { noRepost: v })} label="禁止转载" />
+                  )}
+                </>
               )}
             </div>
             {data.footer.show && (
               <>
-                <div className="row">
-                  <span className="muted grow">写法</span>
-                  <Segmented
-                   
-                    value={data.footer.style}
-                    onChange={(v) => patch('footer', { style: v })}
-                    options={[
-                      { value: 'full' as const, label: '完整' },
-                      { value: 'plain' as const, label: '简洁' },
-                    ]}
-                  />
-                </div>
+                {!data.dezhihu && (
+                  <div className="row">
+                    <span className="muted grow">写法</span>
+                    <Segmented
+
+                      value={data.footer.style}
+                      onChange={(v) => patch('footer', { style: v })}
+                      options={[
+                        { value: 'full' as const, label: '完整' },
+                        { value: 'plain' as const, label: '简洁' },
+                      ]}
+                    />
+                  </div>
+                )}
                 <div className="row">
                   <div className="grow">
                     <TextField label="时间" value={data.footer.time} onChange={(v) => patch('footer', { time: v })} />

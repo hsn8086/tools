@@ -9,6 +9,7 @@ export const uid = () => `b${Date.now().toString(36)}${(seq++).toString(36)}`;
 
 export const defaultData = (): ZhihuData => ({
   theme: 'light',
+  dezhihu: false,
   question: {
     show: true,
     title: '有什么让房间变整洁的方法，真的能坚持下去？',

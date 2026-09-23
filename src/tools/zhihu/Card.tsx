@@ -27,12 +27,14 @@ function inline(text: string): ReactNode {
 
 export function ZhihuCard({ data }: { data: ZhihuData }) {
   const { question: q, author: a, vote: v, footer: f, statusBar: sb } = data;
+  const dezhihu = data.dezhihu;
 
-  const full = f.style !== 'plain';
+  // 去知乎化时强制朴素写法：「发布于」「IP 属地」「禁止转载」都是平台话术
+  const full = f.style !== 'plain' && !dezhihu;
   const footerParts: string[] = [];
   if (f.time.trim()) footerParts.push(full ? `发布于 ${f.time.trim()}` : f.time.trim());
   if (f.ip.trim()) footerParts.push(full ? `IP 属地${f.ip.trim()}` : f.ip.trim());
-  if (f.noRepost) footerParts.push('禁止转载');
+  if (f.noRepost && !dezhihu) footerParts.push('禁止转载');
 
   return (
     <div className="zh" data-theme={data.theme}>
@@ -42,7 +44,7 @@ export function ZhihuCard({ data }: { data: ZhihuData }) {
         <>
           <div className="question">
             <h1 className="q-title">{q.title}</h1>
-            {q.showMeta && (
+            {q.showMeta && !dezhihu && (
               <div className="q-meta">
                 <span>
                   知乎 · {q.answerCount} 个回答 · {q.followCount} 关注
@@ -56,25 +58,28 @@ export function ZhihuCard({ data }: { data: ZhihuData }) {
       )}
 
       <div className={`answer${f.show && footerParts.length ? '' : ' no-footer'}`}>
-        <div className="author">
-          <img className="avatar" src={a.avatar} alt="" crossOrigin="anonymous" />
-          <div className="a-main">
-            <div className="a-name">
-              <span>{a.name}</span>
-              <Badge kind={a.badge} />
+        {/* 去知乎化：整个答主行（匿名头像、昵称、认证、关注/分享）都去掉 */}
+        {!dezhihu && (
+          <div className="author">
+            <img className="avatar" src={a.avatar} alt="" crossOrigin="anonymous" />
+            <div className="a-main">
+              <div className="a-name">
+                <span>{a.name}</span>
+                <Badge kind={a.badge} />
+              </div>
+              {a.headline.trim() && <div className="a-headline">{a.headline}</div>}
             </div>
-            {a.headline.trim() && <div className="a-headline">{a.headline}</div>}
+            {a.showFollow && (
+              <div className="follow">
+                <Plus />
+                <span>关注</span>
+              </div>
+            )}
+            {a.showShare && <ShareIcon />}
           </div>
-          {a.showFollow && (
-            <div className="follow">
-              <Plus />
-              <span>关注</span>
-            </div>
-          )}
-          {a.showShare && <ShareIcon />}
-        </div>
+        )}
 
-        {v.show && (
+        {v.show && !dezhihu && (
           <div className="vote">
             <div className="left">
               <span>{v.count} 人赞同了该回答</span>
@@ -101,7 +106,7 @@ export function ZhihuCard({ data }: { data: ZhihuData }) {
           )}
         </div>
 
-        {data.showExpandChevron && (
+        {data.showExpandChevron && !dezhihu && (
           <div className="chevron-more">
             <DoubleChevronDown />
           </div>
