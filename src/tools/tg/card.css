@@ -24,8 +24,10 @@
   --mt-out: rgba(239, 250, 255, 0.8);   /* grayTextBubble_outgoing / accentIconBubble_outgoing */
   --pill: rgba(177, 195, 213, 0.16);    /* 日期/系统药丸：grayIcon 低透明 */
   --pill-text: #b1c3d5;
-  --react-bg: rgba(177, 195, 213, 0.2); /* grayIcon.withAlphaComponent(0.2) */
   --react-text: #2ea6ff;                /* accent */
+  --react-in: rgba(46, 166, 255, 0.1);  /* 气泡内药丸底：accent.withAlphaComponent(0.1) */
+  --react-out: rgba(177, 195, 213, 0.2);/* 气泡外药丸底：grayIcon.withAlphaComponent(0.2) */
+  --react-self-in: rgba(239, 250, 255, 0.1);  /* 自己气泡内：grayTextBubble_outgoing ×0.1 */
   --quote-out: #ffffff;                 /* chatReplyTitleBubble_outgoing */
   --vcircle: #b1c3d5;                   /* fileActivityBackgroundBubble_incoming */
   --vplay-in: #213040;
@@ -60,8 +62,10 @@
   --mt-out: rgba(0, 140, 9, 0.8);
   --pill: rgba(158, 158, 158, 0.18);
   --pill-text: #999999;
-  --react-bg: rgba(158, 158, 158, 0.2);
   --react-text: #2481cc;
+  --react-in: rgba(36, 129, 204, 0.1);
+  --react-out: rgba(158, 158, 158, 0.2);
+  --react-self-in: rgba(0, 140, 9, 0.1);
   --quote-out: #00a700;
   --vcircle: #3ca7fe;
   --vplay-in: #ffffff;
@@ -520,7 +524,10 @@
   margin: 0 0 6px;
 }
 
-/* ---------- 表情回应：气泡下面挂一排药丸 ---------- */
+/* ---------- 表情回应 ----------
+   TG 的规矩：文字/语音消息的药丸画在气泡里面，无说明的图片和大表情才挂在气泡外面。
+   气泡内：进来 accent×0.1 底 accent 字；自己 grayText×0.1 底灰字。
+   气泡外：grayIcon×0.2 底 accent 字（两边一样）。 */
 
 .reacts {
   display: flex;
@@ -537,11 +544,21 @@
   min-width: 34px;
   padding: 0 10px;
   border-radius: 999px;
-  background: var(--react-bg);
+  background: var(--react-in);
   color: var(--react-text);
   font-size: 13px;
   font-weight: 500;
   line-height: 1;
+}
+
+.msg[data-self] .react {
+  background: var(--react-self-in);
+  color: var(--mt-out);
+}
+
+.col > .reacts .react {
+  background: var(--react-out);
+  color: var(--react-text);
 }
 
 .react-emoji {

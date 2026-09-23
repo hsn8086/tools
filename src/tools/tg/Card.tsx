@@ -105,6 +105,18 @@ export function TGCard({ data, theme }: { data: TGData; theme: 'light' | 'dark' 
       </div>
     ) : null;
 
+  const reacts = (it: Extract<TGItem, { kind: 'msg' }>) =>
+    it.reactions?.length ? (
+      <div className="reacts">
+        {it.reactions.map((r, i) => (
+          <span className="react" key={i}>
+            <span className="react-emoji">{r.emoji}</span>
+            {r.count}
+          </span>
+        ))}
+      </div>
+    ) : null;
+
   return (
     <div className="tg" data-theme={theme}>
       {data.chrome.show && (
@@ -176,6 +188,7 @@ export function TGCard({ data, theme }: { data: TGData; theme: 'light' | 'dark' 
                         <div className="cap">
                           {inline(it.text)}
                           {meta(it, 'bubble')}
+                          {reacts(it)}
                         </div>
                       ) : (
                         <span className="mt mt-media">
@@ -204,6 +217,7 @@ export function TGCard({ data, theme }: { data: TGData; theme: 'light' | 'dark' 
                         <span className="vdur">{it.voice}</span>
                         {meta(it, 'bubble')}
                       </div>
+                      {reacts(it)}
                     </div>
                   ) : bare ? (
                     <span className="bemoji">
@@ -220,19 +234,12 @@ export function TGCard({ data, theme }: { data: TGData; theme: 'light' | 'dark' 
                       ) : null}
                       {inline(it.text)}
                       {meta(it, 'bubble')}
+                      {reacts(it)}
                     </div>
                   )}
 
-                  {it.reactions?.length ? (
-                    <div className="reacts">
-                      {it.reactions.map((r, i) => (
-                        <span className="react" key={i}>
-                          <span className="react-emoji">{r.emoji}</span>
-                          {r.count}
-                        </span>
-                      ))}
-                    </div>
-                  ) : null}
+                  {/* 只有纯图（无说明）和大表情才挂气泡外 */}
+                  {(src && !it.text) || bare ? reacts(it) : null}
                 </div>
               </div>
             </Fragment>
